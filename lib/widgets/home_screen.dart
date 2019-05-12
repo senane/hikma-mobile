@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hikma_health/colors.dart';
+import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/widgets/login_screen.dart';
-import 'package:hikma_health/model/patient_search_result.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/widgets/new_patient_screen.dart';
 import 'package:hikma_health/widgets/patient_details_screen.dart';

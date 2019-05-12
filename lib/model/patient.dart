@@ -1,6 +1,28 @@
 import 'package:hikma_health/constants.dart';
 import 'package:meta/meta.dart';
 
+class PatientSearchResult {
+  final String id;
+  final String uuid;
+  final String name;
+
+  PatientSearchResult.fromJson(Map jsonMap)
+      : id = jsonMap['identifier'],
+        uuid = jsonMap['uuid'],
+        name = '${jsonMap['givenName']} ${jsonMap['familyName']}';
+}
+
+class PatientSearchList {
+  final List<PatientSearchResult> patientSearchList;
+
+  PatientSearchList.fromJson(Map jsonMap)
+      : patientSearchList = List<PatientSearchResult>() {
+    for (var jsonPatient in jsonMap['pageOfResults']) {
+      patientSearchList.add(PatientSearchResult.fromJson(jsonPatient));
+    }
+  }
+}
+
 class PatientPersonalInfo {
   final String uuid, patientId, nationalId;
   final String firstName, middleName, lastName;

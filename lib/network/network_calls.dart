@@ -1,15 +1,12 @@
 import 'dart:convert';
-import 'package:hikma_health/model/location_search_list.dart';
+import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
-import 'package:hikma_health/model/patient_search_result.dart';
 import 'package:hikma_health/model/session.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String API_BASE =
     'https://demo-staging.hikmahealth.org/openmrs/ws/rest/v1';
-
-/// Takes the [clientID] and returns [UserInfo]
 
 Future<String> authenticate(username, password) async {
   String basicAuth = createBasicAuth(username, password);
