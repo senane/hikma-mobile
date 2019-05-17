@@ -1,7 +1,5 @@
-import 'package:hikma_health/model/location_search_result.dart';
-import 'package:hikma_health/model/location_search_list.dart';
+import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
-import 'package:hikma_health/model/patient_search_result.dart';
 import 'package:test_api/test_api.dart';
 import 'package:hikma_health/network/network_calls.dart';
 

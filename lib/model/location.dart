@@ -1,4 +1,3 @@
-import 'package:hikma_health/model/location_search_result.dart';
 
 class LocationSearchList {
   final List<LocationSearchResult> locationSearchList;
@@ -9,4 +8,13 @@ class LocationSearchList {
       locationSearchList.add(LocationSearchResult.fromJson(jsonLocation));
     }
   }
+}
+
+class LocationSearchResult {
+  final String uuid;
+  final String name;
+
+  LocationSearchResult.fromJson(Map jsonMap)
+      : uuid = jsonMap['uuid'],
+        name = jsonMap['display'];
 }
