@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
+import 'charts/simple_line.dart';
 
 class PatientDetailsScreen extends StatefulWidget {
 
@@ -35,12 +37,12 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 CircleAvatar(
-                    radius: 64.0,
-                    backgroundImage: NetworkImage(
-                        '$API_BASE/patientImage?patientUuid=${widget.uuid}',
-                        headers: {'authorization': _basicAuth}
-                    ),
-                    backgroundColor: Colors.transparent
+                  radius: 64.0,
+                  backgroundImage: NetworkImage(
+                    '$API_BASE/patientImage?patientUuid=${widget.uuid}',
+                    headers: {'authorization': _basicAuth},
+                  ),
+                  backgroundColor: Colors.transparent,
                 ),
                 Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                 Text(
@@ -54,7 +56,10 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
               ],
             ),
             Padding(padding: EdgeInsets.symmetric(vertical: 16)),
-            _buildDataBit('Local Name', '${_patientData.firstNameLocal} ${_patientData.lastNameLocal}'),
+            _buildDataBit(
+              'Local Name',
+              '${_patientData.firstNameLocal} ${_patientData.lastNameLocal}',
+            ),
             Padding(padding: EdgeInsets.symmetric(vertical: 8)),
             _buildDataBit('Patient ID', _patientData.patientId),
             Padding(padding: EdgeInsets.symmetric(vertical: 8)),
@@ -71,6 +76,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
             _buildDataBit('State', _patientData.state),
             Padding(padding: EdgeInsets.symmetric(vertical: 8)),
             _buildDataBit('District', _patientData.district),
+            Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+            Container(
+              height: 300,
+              child: SimpleLineChart.withRandomData(),
+            ),
           ],
         ),
       ),
