@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/model/patient.dart';
@@ -6,6 +9,7 @@ import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/widgets/new_patient_screen.dart';
 import 'package:hikma_health/widgets/patient_details_screen.dart';
 
+
 class PatientSearchScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _PatientSearchScreenState();
@@ -13,16 +17,27 @@ class PatientSearchScreen extends StatefulWidget {
 
 class _PatientSearchScreenState extends State<PatientSearchScreen> {
   String _basicAuth = createBasicAuth('superman', 'Admin123');
-  bool _isLoading = false, _isFieldEmpty = true;
+  bool _isLoading = false, _isFieldEmpty = true, _online = false;
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
   List<PatientSearchResult> _patientList;
+  StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+          setState(() => _online = result != ConnectivityResult.none);
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home"),
+        title: Text(_online ? "Home" : "Home (Offline Mode)"),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add),
@@ -110,9 +125,10 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
 
   @override
   void dispose() {
+    super.dispose();
     _searchController.dispose();
     _searchNode.dispose();
-    super.dispose();
+    _connectivitySubscription.cancel();
   }
 
   Widget _buildPatientsList() {

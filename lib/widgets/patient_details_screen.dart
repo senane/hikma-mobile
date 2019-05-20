@@ -79,7 +79,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
             Padding(padding: EdgeInsets.symmetric(vertical: 8)),
             Container(
               height: 300,
-              child: SimpleLineChart.withRandomData(),
+              child: SimpleLineChart.withDummyData(),
             ),
           ],
         ),
