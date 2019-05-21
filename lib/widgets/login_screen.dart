@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/widgets/home_screen.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginScreen extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  bool _isLoading = false;
+class _LoginScreenState extends State<LoginScreen> {
+  bool _loading = false, _firstTime = true;
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameNode = FocusNode();
   final _passwordNode = FocusNode();
+  final _secureStorage = FlutterSecureStorage();
+
   @override
   Widget build(BuildContext context) {
+    if (_firstTime) {
+      _autoAuthenticate();
+    }
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -85,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                 _login();
               },
             ),
-            _isLoading
+            _loading
                 ? Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(
@@ -129,12 +135,29 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  void _autoAuthenticate() async {
+    setState(() => _loading = true);
+    _firstTime = false;
+    String basicAuth = await _secureStorage.read(key: 'auth');
+    if (basicAuth != null) {
+      String sessionId = await baseAuthenticate(basicAuth: basicAuth);
+      setState(() => _loading = false);
+      if (sessionId != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PatientSearchScreen()),
+        );
+      }
+    }
+    setState(() => _loading = false);
+  }
+
   void _login() async {
-    setState(() => _isLoading = true);
+    setState(() => _loading = true);
     String username = _usernameController.text;
     String password = _passwordController.text;
-    String sessionId = await authenticate(username, password);
-    setState(() => _isLoading = false);
+    String sessionId = await authenticate(username: username, password: password);
+    setState(() => _loading = false);
     if (sessionId != null) {
       Navigator.pushReplacement(
         context,

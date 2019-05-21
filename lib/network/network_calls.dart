@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/model/session.dart';
@@ -8,8 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 const String API_BASE =
     'https://demo-staging.hikmahealth.org/openmrs/ws/rest/v1';
 
-Future<String> authenticate(username, password) async {
+Future<String> authenticate({username, password}) async {
   String basicAuth = createBasicAuth(username, password);
+  return baseAuthenticate(basicAuth: basicAuth);
+}
+
+Future<String> baseAuthenticate({basicAuth}) async {
+  final storage = FlutterSecureStorage();
   var response = await http
       .get('$API_BASE/session', headers: {'authorization': basicAuth},)
       .timeout(Duration(seconds: 30));
@@ -28,6 +34,7 @@ Future<String> authenticate(username, password) async {
   if (session.authenticated) {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth', basicAuth);
+    await storage.write(key: 'auth', value: basicAuth);
     return session.id;
   }
   return session.authenticated ? session.id : null;

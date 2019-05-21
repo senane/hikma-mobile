@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/widgets/login_screen.dart';
@@ -16,8 +17,9 @@ class PatientSearchScreen extends StatefulWidget {
 }
 
 class _PatientSearchScreenState extends State<PatientSearchScreen> {
-  String _basicAuth = createBasicAuth('superman', 'Admin123');
-  bool _isLoading = false, _isFieldEmpty = true, _online = false;
+  bool _loading = false, _fieldEmpty = true, _online = false;
+  String _basicAuth;
+  final _secureStorage = FlutterSecureStorage();
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
   List<PatientSearchResult> _patientList;
@@ -27,6 +29,7 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
   @override
   void initState() {
     super.initState();
+    _secureStorage.read(key: 'auth').then((value) => _basicAuth = value);
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
           setState(() => _online = result != ConnectivityResult.none);
@@ -35,9 +38,15 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_online ? "Home" : "Home (Offline Mode)"),
+        title: Text("Hikma Home"),
+        centerTitle: true,
+        leading: Padding(
+            padding: EdgeInsets.all(12),
+            child: ImageIcon(AssetImage('assets/logo.png'))
+        ),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add),
@@ -53,10 +62,11 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
           IconButton(
             icon: Icon(Icons.exit_to_app),
             tooltip: 'Logout',
-            onPressed: () {
+            onPressed: () async {
+              await _secureStorage.delete(key: 'auth');
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
+                MaterialPageRoute(builder: (context) => LoginScreen()),
               );
             },
           ),
@@ -64,6 +74,18 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
       ),
       body: Column(
         children: <Widget>[
+          _online
+              ? Container(width: 0, height: 0)
+              : Container(
+            padding: EdgeInsets.symmetric(vertical: 4),
+            width: double.infinity,
+            color: Colors.red,
+            child: Text(
+              'Offline Mode',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
           Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Column(
@@ -72,15 +94,15 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                 TextField(
                   controller: _searchController,
                   onChanged: (query) {
-                    setState(() => _isFieldEmpty = _searchController.text.isEmpty);
+                    setState(() => _fieldEmpty = _searchController.text.isEmpty);
                   },
                   decoration: InputDecoration(
                     labelText: 'Search Patients',
                     suffixIcon: IconButton(
-                      icon: _isLoading
+                      icon: _loading
                           ? CircularProgressIndicator(strokeWidth: 1)
                           : Icon(Icons.search),
-                      onPressed: _isFieldEmpty
+                      onPressed: _fieldEmpty
                           ? null
                           : () async {
                         searchPatient(
@@ -103,14 +125,14 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                 FlatButton(
                   child: Text('Clear'),
                   textColor: hikmaPrimary,
-                  onPressed: _isFieldEmpty
+                  onPressed: _fieldEmpty
                       ? null
                       : () {
                     setState(() {
                       _searchNode.unfocus();
                       _searchController.clear();
                       _patientList = null;
-                      _isFieldEmpty = true;
+                      _fieldEmpty = true;
                     });
                   },
                 ),
@@ -132,7 +154,7 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
   }
 
   Widget _buildPatientsList() {
-    return _isLoading
+    return _loading
         ? Padding(
       padding: EdgeInsets.only(top: 128),
       child: CircularProgressIndicator(),
@@ -171,9 +193,9 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
   void searchPatient(String locationUuid, String query, BuildContext context) async {
     if (_searchController.text.isNotEmpty) {
       _searchNode.unfocus();
-      setState(() => _isLoading = true);
+      setState(() => _loading = true);
       _patientList = await queryPatient(locationUuid, query);
-      setState(() => _isLoading = false);
+      setState(() => _loading = false);
     }
   }
 }

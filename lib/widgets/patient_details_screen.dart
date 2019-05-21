@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'charts/simple_line.dart';
@@ -14,13 +15,20 @@ class PatientDetailsScreen extends StatefulWidget {
 }
 
 class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
-  bool _isLoading = true;
-  String _basicAuth = createBasicAuth('superman', 'Admin123');
+  bool _loading = true;
+  String _basicAuth;
   PatientPersonalInfo _patientData;
+
+
+  @override
+  void initState() {
+    super.initState();
+    FlutterSecureStorage().read(key: 'auth').then((value) => _basicAuth = value);
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_loading) {
       _loadPatientData();
     }
     return Scaffold(
@@ -28,7 +36,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
         title: Text("Patient Details"),
       ),
       body: Center(
-        child: _isLoading
+        child: _loading
             ? CircularProgressIndicator()
             : ListView(
           padding: EdgeInsets.all(16),
@@ -89,7 +97,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
   void _loadPatientData() async {
     _patientData = await getPatient(widget.uuid);
-    setState(() => _isLoading = false);
+    setState(() => _loading = false);
   }
 
   Widget _buildDataBit(String description, data) {
