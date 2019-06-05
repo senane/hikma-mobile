@@ -1,18 +1,89 @@
+import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/colors.dart';
-import 'package:hikma_health/widgets/login_screen.dart';
+import 'package:hikma_health/user_repository/user_repository.dart';
+import 'package:hikma_health/widgets/home/home.dart';
+import 'package:hikma_health/widgets/login/login.dart';
 
-void main() => runApp(App());
+import 'authentication/authentication.dart';
 
-class App extends StatelessWidget {
+void main() {
+//  BlocSupervisor().delegate = SimpleBlocDelegate();
+  runApp(App(userRepository: UserRepository()));
+}
+
+class App extends StatefulWidget {
+
+  final UserRepository userRepository;
+
+  App({Key key, @required this.userRepository}) : super(key: key);
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  AuthenticationBloc _authenticationBloc;
+  UserRepository get _userRepository => widget.userRepository;
+
+  @override
+  void initState() {
+    _authenticationBloc = AuthenticationBloc(userRepository: _userRepository);
+    _authenticationBloc.dispatch(AppStarted());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LoginScreen(),
-      theme: buildTheme(),
-      debugShowCheckedModeBanner: false,
+    return BlocProvider<AuthenticationBloc>(
+      bloc: _authenticationBloc,
+      child: MaterialApp(
+        theme: buildTheme(),
+        home: BlocBuilder<AuthenticationEvent, AuthenticationState>(
+          bloc: _authenticationBloc,
+          builder: (BuildContext context, AuthenticationState state) {
+            if (state is AuthenticationAuthenticated) {
+              if (state.auto) {
+                return HomeScreen(userRepository: _userRepository);
+              } else {
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            HomeScreen(userRepository: _userRepository)
+                    ),
+                  );
+                });
+                return LoginPage(userRepository: _userRepository);
+              }
+            } else {
+              return LoginPage(userRepository: _userRepository);
+            }
+//            if (state is AuthenticationUninitialized) {
+//              return SplashPage();
+//            }
+//            if (state is AuthenticationAuthenticated) {
+//              return HomePage();
+//            }
+//            if (state is AuthenticationUnauthenticated) {
+//              return LoginPage(userRepository: _userRepository);
+//            }
+//            if (state is AuthenticationLoading) {
+//              return LoadingIndicator();
+//            }
+          },
+        ),
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _authenticationBloc.dispose();
+    super.dispose();
   }
 
   ThemeData buildTheme() {
@@ -35,16 +106,37 @@ class App extends StatelessWidget {
   TextTheme _buildTextTheme(TextTheme base) {
     return base.copyWith(
       headline: base.headline.copyWith(
-        fontWeight: FontWeight.w900
+          fontWeight: FontWeight.w900
       ),
       title: base.title.copyWith(
-        fontSize: 18,
-        fontWeight: FontWeight.w500
+          fontSize: 18,
+          fontWeight: FontWeight.w500
       ),
       caption: base.caption.copyWith(
-        fontSize: 14,
-        fontWeight: FontWeight.w400
+          fontSize: 14,
+          fontWeight: FontWeight.w400
       ),
     );
+  }
+}
+
+
+class SimpleBlocDelegate extends BlocDelegate {
+  @override
+  void onEvent(Bloc bloc, Object event) {
+    super.onEvent(bloc, event);
+    print(event);
+  }
+
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+    print(transition);
+  }
+
+  @override
+  void onError(Bloc bloc, Object error, StackTrace stacktrace) {
+    super.onError(bloc, error, stacktrace);
+    print(error);
   }
 }

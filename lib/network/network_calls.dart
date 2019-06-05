@@ -1,23 +1,21 @@
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/model/session.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:meta/meta.dart';
 
 const String API_BASE =
-    'https://demo-staging.hikmahealth.org/openmrs/ws/rest/v1';
+    'https://demo.hikmahealth.org/openmrs/ws/rest/v1';
 
-Future<String> authenticate({username, password}) async {
+Future<String> auth({@required username, @required password}) async {
   String basicAuth = createBasicAuth(username, password);
-  return baseAuthenticate(basicAuth: basicAuth);
+  return baseAuth(auth: basicAuth);
 }
 
-Future<String> baseAuthenticate({basicAuth}) async {
-  final storage = FlutterSecureStorage();
+Future<String> baseAuth({@required auth}) async {
   var response = await http
-      .get('$API_BASE/session', headers: {'authorization': basicAuth},)
+      .get('$API_BASE/session', headers: {'authorization': auth},)
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -31,13 +29,7 @@ Future<String> baseAuthenticate({basicAuth}) async {
   }
   final responseJson = json.decode(response.body);
   Session session = Session.fromJson(responseJson);
-  if (session.authenticated) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth', basicAuth);
-    await storage.write(key: 'auth', value: basicAuth);
-    return session.id;
-  }
-  return session.authenticated ? session.id : null;
+  return session.authenticated ? auth : null;
 }
 
 Future<LocationSearchList> getLocations() async {

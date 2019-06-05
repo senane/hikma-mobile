@@ -6,7 +6,7 @@ import 'package:hikma_health/network/network_calls.dart';
 main() {
   String sessionId;
   test("Login", () async {
-    sessionId = await authenticate(username: 'superman', password: 'Admin123');
+    sessionId = await auth(username: 'superman', password: 'Admin123');
     print(sessionId == null ? 'Not authenticated.' : 'Authenticated. Session ID: $sessionId\n\n');
   });
 
