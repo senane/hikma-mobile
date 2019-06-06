@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/constants.dart';
 import 'package:hikma_health/model/patient_post_data.dart';
-import 'package:hikma_health/network/network_calls.dart';
+import 'package:hikma_health/user_repository/user_repository.dart';
+
+import 'new_patient.dart';
 
 class PatientRegistrationPage extends StatefulWidget {
+  final UserRepository userRepository;
+
+  PatientRegistrationPage({Key key, @required this.userRepository})
+      : assert(userRepository != null),
+        super(key: key);
+
   @override
   _PatientRegistrationPageState createState() => _PatientRegistrationPageState();
 }
@@ -14,9 +23,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  bool _loading = false;
   bool _justStarted = true;
-  bool _birthDateEstimated = false;
   String _gender;
   DateTime _birthDate;
   TimeOfDay _birthTime;
@@ -47,57 +54,75 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     'state': FocusNode(),
   };
 
+  UserRepository get _userRepository => widget.userRepository;
+  NewPatientBloc _newPatientBloc;
+
+  @override
+  void initState() {
+    _newPatientBloc = NewPatientBloc(userRepository: _userRepository);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('New Patient'),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          children: <Widget>[
-            Form(
-              key: _formKey,
-              child: Column(
+    return BlocListener(
+      bloc: _newPatientBloc,
+      listener: (context, state) {
+        if (state is NewPatientRegistered) {
+          Navigator.pop(context);
+        }
+      },
+      child: BlocBuilder(
+        bloc: _newPatientBloc,
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('New Patient'),
+            ),
+            body: SafeArea(
+              child: ListView(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 children: <Widget>[
-                  _buildPersonalInfoFields(),
-                  _buildAddressInfoFields(),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        _buildPersonalInfoFields(),
+                        _buildAddressInfoFields(),
+                      ],
+                    ),
+                  ),
+                  ButtonBar(
+                    children: <Widget>[
+                      FlatButton(
+                        child: Text('CANCEL'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      state is NewPatientLoading
+                          ? CircularProgressIndicator()
+                          : RaisedButton(
+                        child: Text('SAVE'),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: new BorderRadius.circular(10.0)
+                        ),
+                        color: hikmaPrimary,
+                        textColor: Colors.white,
+                        onPressed: () async {
+                          if (_validateData()) {
+                            Map data = _parseData();
+                            _newPatientBloc.dispatch(SaveButtonClicked(data: data));
+                          }
+                        },
+                      )
+                    ],
+                  ),
                 ],
               ),
             ),
-            ButtonBar(
-              children: <Widget>[
-                FlatButton(
-                  child: Text('CANCEL'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                _loading
-                    ? CircularProgressIndicator()
-                    : RaisedButton(
-                  child: Text('SAVE'),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: new BorderRadius.circular(10.0)
-                  ),
-                  color: hikmaPrimary,
-                  textColor: Colors.white,
-                  onPressed: () async {
-                    if (_validateData()) {
-                      Map data = _parseData();
-                      await _createPatient(data);
-                      Navigator.pop(context);
-                    }
-                    else {
-                      setState(() => _loading = false);
-                    }
-                  },
-                )
-              ],
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -220,16 +245,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                 }
               },
             ),
-//            Row(
-//              mainAxisAlignment: MainAxisAlignment.center,
-//              children: <Widget>[
-//                Checkbox(
-//                  value: _birthDateEstimated,
-//                  onChanged: (bool value) => setState(() => _birthDateEstimated = value),
-//                ),
-//                Text('Estimated'),
-//              ],
-//            ),
           ],
         ),
       ],
@@ -301,7 +316,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
   bool _validateData() {
     setState(() {
-      _loading = true;
       _justStarted = false;
     });
     return _formKey.currentState.validate() && _birthDate != null;
@@ -380,10 +394,5 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     );
 
     return data.toMap();
-  }
-
-  _createPatient(Map data) async {
-    dynamic response = await createPatient(body: data);
-    print(response);
   }
 }

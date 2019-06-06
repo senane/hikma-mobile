@@ -8,8 +8,8 @@ import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/network/network_calls.dart';
-import 'package:hikma_health/widgets/new_patient_screen.dart';
-import 'package:hikma_health/widgets/patient_details_screen.dart';
+import 'package:hikma_health/widgets/new_patient/new_patient.dart';
+import 'package:hikma_health/widgets/patient_details/patient_details.dart';
 
 import 'home.dart';
 
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) =>
-                          PatientRegistrationPage()),
+                          PatientRegistrationPage(userRepository: _userRepository)),
                     );
                   },
                 ),
@@ -207,9 +207,10 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => PatientDetailsScreen(
-                        uuid: patientsList[index].uuid
-                    )
+                  builder: (context) => PatientDetailsScreen(
+                    uuid: patientsList[index].uuid,
+                    userRepository: _userRepository,
+                  ),
                 ),
               );
             },

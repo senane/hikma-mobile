@@ -32,11 +32,10 @@ Future<String> baseAuth({@required auth}) async {
   return session.authenticated ? auth : null;
 }
 
-Future<LocationSearchList> getLocations() async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
+Future<LocationSearchList> getLocations({@required String auth}) async {
   var response = await http
       .get('$API_BASE/location?tag=Login Location',
-    headers: {'authorization': basicAuth},)
+    headers: {'authorization': auth},)
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -53,8 +52,10 @@ Future<LocationSearchList> getLocations() async {
   return locations;
 }
 
-Future<List<PatientSearchResult>> queryPatient(
-    String locationUuid, String query) async {
+Future<List<PatientSearchResult>> queryPatient({
+  @required String auth,
+  @required String locationUuid,
+  @required String query}) async {
   String basicAuth = createBasicAuth('superman', 'Admin123');
   var response = await http
       .get('$API_BASE/bahmnicore/search/patient'
@@ -75,11 +76,12 @@ Future<List<PatientSearchResult>> queryPatient(
   return PatientSearchList.fromJson(responseJson).patientSearchList;
 }
 
-Future<PatientPersonalInfo> getPatient(String patientUuid) async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
+Future<PatientPersonalInfo> getPatient({
+  @required String auth,
+  @required String uuid}) async {
   var response = await http
-      .get('$API_BASE/patient/$patientUuid?v=full',
-    headers: {'authorization': basicAuth},)
+      .get('$API_BASE/patient/$uuid?v=full',
+    headers: {'authorization': auth},)
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -94,12 +96,11 @@ Future<PatientPersonalInfo> getPatient(String patientUuid) async {
   return PatientPersonalInfo.fromJson(responseJson);
 }
 
-Future<String> createPatient({Map body}) async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
+Future<String> createPatient({@required auth, @required Map body}) async {
   var data = json.encode(body).replaceAll('"null"', 'null');
   var response = await http
       .post('$API_BASE/bahmnicore/patientprofile', body: data,
-      headers: {'authorization': basicAuth, 'content-type': 'application/json'})
+      headers: {'authorization': auth, 'content-type': 'application/json'})
       .timeout(Duration(seconds: 30));
 
   if (response == null) {

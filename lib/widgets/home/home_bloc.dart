@@ -29,8 +29,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     if (event is SearchButtonPressed) {
       yield HomeLoading();
       try {
+        String auth = await userRepository.readAuth();
         List<PatientSearchResult> patients =
-        await queryPatient(event.locationUuid, event.query);
+        await queryPatient(
+            auth: auth,
+            locationUuid: event.locationUuid,
+            query: event.query);
         if (patients != null) {
           yield HomeInitial(query: event.query, patients: patients);
         }

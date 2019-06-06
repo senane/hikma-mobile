@@ -4,14 +4,16 @@ import 'package:test_api/test_api.dart';
 import 'package:hikma_health/network/network_calls.dart';
 
 main() {
-  String sessionId;
+  String authentication;
   test("Login", () async {
-    sessionId = await auth(username: 'superman', password: 'Admin123');
-    print(sessionId == null ? 'Not authenticated.' : 'Authenticated. Session ID: $sessionId\n\n');
+    authentication = await auth(username: 'superman', password: 'Admin123');
+    print(authentication == null
+        ? 'Not authenticated.'
+        : 'Authenticated: $authentication\n\n');
   });
 
   test("Login Locations", () async {
-    LocationSearchList locations = await getLocations();
+    LocationSearchList locations = await getLocations(auth: authentication);
     List<LocationSearchResult> locationList = locations.locationSearchList;
     print('${locationList.length} locations found.');
     for (LocationSearchResult location in locationList) {
@@ -23,8 +25,10 @@ main() {
 
   test("Patient Query", () async {
     List<PatientSearchResult> patients = await queryPatient(
-        'bb0e512e-d225-11e4-9c67-080027b662ec',
-        'LOL');
+        auth: authentication,
+        locationUuid: 'bb0e512e-d225-11e4-9c67-080027b662ec',
+        query: 'test'
+    );
     for (PatientSearchResult patient in patients) {
       print(patient.name);
     }
@@ -32,7 +36,9 @@ main() {
 
   test("Get Patient Data", () async {
     PatientPersonalInfo patient = await getPatient(
-        '9bcbbe57-a551-4d2d-a50d-0ca17a0dea25');
+        auth: authentication,
+        uuid: '9bcbbe57-a551-4d2d-a50d-0ca17a0dea25'
+    );
     print('${patient.firstNameLocal} ${patient.lastNameLocal}');
   });
 }
