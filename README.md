@@ -1,4 +1,4 @@
-# hikma_health
+# hikma-mobile
 
 Hikma Health, Inc. Mobile Application
 
@@ -6,25 +6,66 @@ Hikma Health, Inc. Mobile Application
 
 This project is a starting point for a Flutter application.
 
-1. [Install Flutter](https://flutter.dev/docs/get-started/install)
+### Install dependencies
 
-2. Run `$ flutter doctor` to make sure all dependencies are installed and working.
+[Install Flutter](https://flutter.dev/docs/get-started/install)
 
-3. `$ cd hikma-mobile`
+To make sure all dependencies are installed and working run
 
-4. MacOS: To run on an iOS emulator, `$ open -a Simulator`. For an Android emulator, follow [these instructions](https://flutter.dev/docs/get-started/install/macos#android-setup).
+```
+$ flutter doctor
+```
 
-5. `$ flutter run`. If you have multiple devices connected, use `$ flutter -d [device-ID] run`.
+and follow instructions.
 
-   You may encounter the error `Target file "lib/main.dart" not found.` This is because flutter is expecting a `.dart` file with the name `main`, but the file is called `app.dart` in this repository. If this is the case, try
+### Connect a device
 
-   ```
-   $ cd lib
-   $ cp app.dart main.dart
-   $ cd ..
-   ```
+#### On an emulator
 
-   then try `$ flutter run` again
+iOS emulator (MacOS):
+
+```
+$ open -a Simulator
+```
+
+For an Android emulator, follow [these instructions](https://flutter.dev/docs/get-started/install/macos#android-setup).
+
+#### On a mobile device
+
+Connect your device to your computer via USB
+
+[Set up debug mode on your Android](https://www.makeuseof.com/tag/what-is-usb-debugging-mode-on-android-makeuseof-explains/)
+
+### Run the app
+
+#### Using Android Studio (Recommended)
+
+1. [Set up Android Studio](https://flutter.dev/docs/get-started/editor)
+2. Android Studio > Open an existing Android Studio project > Select hikma-mobile > Open
+3. Click the green play button at the top of your screen.
+
+#### Using the command line
+
+
+```
+$ cd hikma-mobile
+$ flutter run
+```
+
+
+If you have multiple devices connected, use `$ flutter -d [device-ID] run`.
+
+You may encounter the error `Target file "lib/main.dart" not found.` This is because flutter is expecting a `.dart` file with the name `main`, but the file is called `app.dart` in this repository. If this is the case, try
+
+```
+$ cd lib
+$ cp app.dart main.dart
+$ cd ..
+```
+
+then try `$ flutter run` again
+
+## More help
 
 A few resources to get you started if this is your first Flutter project:
 
