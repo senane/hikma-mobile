@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/colors.dart';
+import 'package:hikma_health/database/database_helper.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/network/network_calls.dart';
@@ -99,6 +100,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Logout',
                   onPressed: () {
                     _homeBloc.dispatch(LogoutButtonPressed());
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.cloud),
+                  tooltip: 'Database test',
+                  onPressed: () async {
+                    final DatabaseHelper dbHelper = DatabaseHelper.instance;
+                    var result = await dbHelper.insertToJobQueue('test');
+                    print(result);
                   },
                 ),
               ],
