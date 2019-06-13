@@ -142,6 +142,27 @@ class DatabaseHelper {
           columnMiddleName: data['patient']['person']['names']['middleName'],
           columnFamilyName: data['patient']['person']['names']['familyName'],
           columnNamePreferred: false,
+
+          columnAddress1: data['patient']['person']['addresses']['address1'],
+          columnAddress2: data['patient']['person']['addresses']['address2'],
+          columnAddress3: data['patient']['person']['addresses']['address3'],
+          columnCityVillage:
+            data['patient']['person']['addresses']['cityVillage'],
+          columnCountyDistrict:
+            data['patient']['person']['addresses']['countyDistrict'],
+          columnStateProvince:
+            data['patient']['person']['addresses']['stateProvince'],
+
+          columnPIDIdentifierSourceUuid:
+            data['patient']['identifiers'][1]['identifierSourceUuid'],
+          columnPIDIdentifierPrefix:
+            data['patient']['identifiers'][1]['identifierPrefix'],
+          columnPIDIdentifierType:
+            data['patient']['identifiers'][1]['identifierType'],
+          columnPIDIdentifierPreferred:
+            data['patient']['identifiers'][1]['identifierPreferred'],
+          columnPIDIdentifierVoided:
+            data['patient']['identifiers'][1]['identifierVoided'],
         }
     );
     return linkId;
