@@ -5,8 +5,9 @@ import 'package:flutter_android/android_content.dart' show Context;
 class DatabaseHelper {
 
   static final tableJobQueue = 'job_queue';
+  static final columnId = 'id';
   static final columnJobId = 'job_id';
-  static final columnRequest = 'request';
+  static final columnData = 'data';
 
   static final tablePatients = 'patients';
   static final columnPatientId = 'patient_id';
@@ -69,8 +70,9 @@ class DatabaseHelper {
   void _onCreate(SQLiteDatabase db) async {
     await db.execSQL("""
       CREATE TABLE $tableJobQueue (
-        $columnJobId INTEGER PRIMARY KEY,
-        $columnRequest TEXT NOT NULL
+        $columnId INTEGER PRIMARY KEY,
+        $columnJobId INTEGER,
+        $columnData TEXT NOT NULL
       )
     """);
     await db.execSQL("""
@@ -110,20 +112,21 @@ class DatabaseHelper {
         $columnGender TEXT,
         $columnBirthDate DATETIME,
         $columnBirthDateEstimated BOOLEAN,
-        $columnCauseOfDeath TEXT,
+        $columnCauseOfDeath TEXT
       )
     """);
   }
 
   // Helper methods
 
-  Future<int> insertToJobQueue(String job) async {
+  Future<int> insertToJobQueue(String job, int jobType) async {
     SQLiteDatabase db = await instance.database;
     var linkId = db.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
-        columnJobId: null, // auto-incremented ID assigned automatically
-        columnRequest: job,
+        columnId: null,
+        columnJobId: jobType,
+        columnData: job,
       },
     );
     return linkId;

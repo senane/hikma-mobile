@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Database test',
                   onPressed: () async {
                     final DatabaseHelper dbHelper = DatabaseHelper.instance;
-                    var result = await dbHelper.insertToJobQueue('test');
+                    var result = await dbHelper.insertToJobQueue('test', 1);
                     print(result);
                   },
                 ),
