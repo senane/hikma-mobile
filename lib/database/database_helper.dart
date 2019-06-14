@@ -10,7 +10,6 @@ class DatabaseHelper {
   static final columnData = 'data';
 
   static final tablePatients = 'patients';
-  static final columnPatientId = 'patient_id';
 
   static final columnGivenName = 'first_name';
   static final columnMiddleName = 'middle_name';
@@ -77,7 +76,7 @@ class DatabaseHelper {
     """);
     await db.execSQL("""
       CREATE TABLE $tablePatients (
-        $columnPatientId INTEGER PRIMARY KEY,
+        $columnId INTEGER PRIMARY KEY,
         $columnGivenName TEXT,
         $columnMiddleName TEXT,
         $columnFamilyName TEXT,
@@ -137,33 +136,33 @@ class DatabaseHelper {
     var linkId = db.insert(
         table: tablePatients,
         values: <String, dynamic>{
-          columnPatientId: null, // auto-incremented ID assigned automatically
-          columnGivenName: data['patient']['person']['names']['givenName'],
-          columnMiddleName: data['patient']['person']['names']['middleName'],
-          columnFamilyName: data['patient']['person']['names']['familyName'],
+          columnId: null, // auto-incremented ID assigned automatically
+          columnGivenName: data['patient']['person']['names'][0]['givenName'],
+          columnMiddleName: data['patient']['person']['names'][0]['middleName'],
+          columnFamilyName: data['patient']['person']['names'][0]['familyName'],
           columnNamePreferred: false,
-
-          columnAddress1: data['patient']['person']['addresses']['address1'],
-          columnAddress2: data['patient']['person']['addresses']['address2'],
-          columnAddress3: data['patient']['person']['addresses']['address3'],
-          columnCityVillage:
-            data['patient']['person']['addresses']['cityVillage'],
-          columnCountyDistrict:
-            data['patient']['person']['addresses']['countyDistrict'],
-          columnStateProvince:
-            data['patient']['person']['addresses']['stateProvince'],
-
-          columnPIDIdentifierSourceUuid:
-            data['patient']['identifiers'][1]['identifierSourceUuid'],
-          columnPIDIdentifierPrefix:
-            data['patient']['identifiers'][1]['identifierPrefix'],
-          columnPIDIdentifierType:
-            data['patient']['identifiers'][1]['identifierType'],
-          columnPIDIdentifierPreferred:
-            data['patient']['identifiers'][1]['identifierPreferred'],
-          columnPIDIdentifierVoided:
-            data['patient']['identifiers'][1]['identifierVoided'],
-        }
+//
+//          columnAddress1: data['patient']['person']['addresses']['address1'],
+//          columnAddress2: data['patient']['person']['addresses']['address2'],
+//          columnAddress3: data['patient']['person']['addresses']['address3'],
+//          columnCityVillage:
+//            data['patient']['person']['addresses']['cityVillage'],
+//          columnCountyDistrict:
+//            data['patient']['person']['addresses']['countyDistrict'],
+//          columnStateProvince:
+//            data['patient']['person']['addresses']['stateProvince'],
+//
+//          columnPIDIdentifierSourceUuid:
+//            data['patient']['identifiers'][1]['identifierSourceUuid'],
+//          columnPIDIdentifierPrefix:
+//            data['patient']['identifiers'][1]['identifierPrefix'],
+//          columnPIDIdentifierType:
+//            data['patient']['identifiers'][1]['identifierType'],
+//          columnPIDIdentifierPreferred:
+//            data['patient']['identifiers'][1]['identifierPreferred'],
+//          columnPIDIdentifierVoided:
+//            data['patient']['identifiers'][1]['identifierVoided'],
+        },
     );
     return linkId;
   }
