@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:flutter_sqlcipher/sqlite.dart';
+
 import 'package:flutter_android/android_content.dart' show Context;
+import 'package:flutter_sqlcipher/sqlite.dart';
 
 class DatabaseHelper {
 
@@ -130,14 +131,14 @@ class DatabaseHelper {
     return SQLiteDatabase.deleteDatabase('${cacheDir.path}/cache.db');
   }
 
-  Future<int> insertToJobQueue(String job, int jobType) async {
+  Future<int> insertToJobQueue(int jobId, String data) async {
     SQLiteDatabase db = await instance.database;
     var linkId = db.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
-        columnJobId: jobType,
-        columnData: job,
+        columnJobId: jobId,
+        columnData: data,
       },
     );
     return linkId;
@@ -177,5 +178,9 @@ class DatabaseHelper {
         },
     );
     return linkId;
+  }
+
+  Future<SQLiteCursor> queryJobs() {
+    return _database.rawQuery('SELECT * FROM $tableJobQueue');
   }
 }

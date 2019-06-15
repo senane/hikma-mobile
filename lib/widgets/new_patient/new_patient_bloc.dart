@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:bloc/bloc.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
-import 'package:bloc/bloc.dart';
 
 import 'new_patient.dart';
 
@@ -24,7 +24,6 @@ class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
       yield NewPatientLoading();
       String auth = await userRepository.readAuth();
       await createPatient(auth: auth, body: event.data);
-      await userRepository.queueJob(auth: auth, body: event.data);
       yield NewPatientRegistered();
     }
   }

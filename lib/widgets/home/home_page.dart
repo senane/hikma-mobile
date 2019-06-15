@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/colors.dart';
-import 'package:hikma_health/database/database_helper.dart';
+import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/login/login.dart';
-import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/widgets/new_patient/new_patient.dart';
 import 'package:hikma_health/widgets/patient_details/patient_details.dart';
 
@@ -49,8 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-          setState(() {
+          setState(() async {
             _online = result != ConnectivityResult.none;
+            if (_online) {
+              // TODO dispatch sync started event and/or block the UI with loading popup and handle the sync in the the bloc
+              await _userRepository.sync();
+            }
           });
         });
   }
@@ -99,9 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.cloud),
                   tooltip: 'Sync',
                   onPressed: () async {
-                    final DatabaseHelper dbHelper = DatabaseHelper.instance;
-                    var result = await dbHelper.insertToJobQueue('test', 1);
-                    print(result);
+                    _userRepository.queueJob(0, 'data');
                   },
                 ),
                 IconButton(

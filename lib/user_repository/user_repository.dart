@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/database/database_helper.dart';
 import 'package:hikma_health/network/network_calls.dart';
+import 'package:hikma_health/network/sync.dart';
 import 'package:meta/meta.dart';
 
 class UserRepository {
@@ -54,10 +54,15 @@ class UserRepository {
     return _dbHelper.deleteDatabase();
   }
 
-  Future<String> queueJob({@required auth, @required Map body}) async {
-    var data = json.encode(body).replaceAll('"null"', 'null');
-    await _dbHelper.insertToJobQueue(data, 1);
-    await _dbHelper.insertToPatients(body);
+  queueJob(int jobId, String data) async {
+    await _dbHelper.insertToJobQueue(jobId, data);
     return data;
+  }
+
+  sync() async {
+    var jobs = await _dbHelper.queryJobs();
+    for (var job in jobs) {
+      synchronise(job);
+    }
   }
 }
