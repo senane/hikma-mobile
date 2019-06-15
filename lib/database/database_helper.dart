@@ -48,26 +48,32 @@ class DatabaseHelper {
   static final columnBirthDateEstimated = 'birth_date_estimated';
   static final columnCauseOfDeath = 'cause_of_death';
 
-  DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+  DatabaseHelper._internal();
+  static final DatabaseHelper instance = DatabaseHelper._internal();
 
   static SQLiteDatabase _database;
   Future<SQLiteDatabase> get database async {
-    if (_database != null) return _database;
-    _database = await _initDatabase();
+    if (_database == null) await _initDatabase();
     return _database;
   }
 
   Future<SQLiteDatabase> _initDatabase() async {
     var cacheDir = await Context.cacheDir;
-    await cacheDir.create(recursive: true);
-    var cacheFile = File("${cacheDir.path}/cache.db");
-    var db = await SQLiteDatabase.openOrCreateDatabase(cacheFile.path);
-    _onCreate(db);
-    return db;
+    if (!cacheDir.existsSync()) {
+      await cacheDir.create(recursive: true);
+    }
+    // Careful here
+    var cacheFile = File('${cacheDir.path}/cache.db');
+    if (cacheFile.existsSync()) {
+      _database = await SQLiteDatabase.openOrCreateDatabase(cacheFile.path);
+    } else {
+      _database = await SQLiteDatabase.openOrCreateDatabase(cacheFile.path);
+      await _onCreate(_database);
+    }
+    return _database;
   }
 
-  void _onCreate(SQLiteDatabase db) async {
+  _onCreate(SQLiteDatabase db) async {
     await db.execSQL("""
       CREATE TABLE $tableJobQueue (
         $columnId INTEGER PRIMARY KEY,
@@ -117,7 +123,13 @@ class DatabaseHelper {
     """);
   }
 
-  // Helper methods
+  /// Helper methods
+
+  Future<bool> deleteDatabase() async {
+    var cacheDir = await Context.cacheDir;
+    _database = null;
+    return SQLiteDatabase.deleteDatabase('${cacheDir.path}/cache.db');
+  }
 
   Future<int> insertToJobQueue(String job, int jobType) async {
     SQLiteDatabase db = await instance.database;

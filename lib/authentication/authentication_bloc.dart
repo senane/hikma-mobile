@@ -24,6 +24,7 @@ class AuthenticationBloc
     if (event is AppStarted) {
       final bool hasAuth = await userRepository.hasAuth();
       if (hasAuth) {
+        await userRepository.initDatabase();
         yield AuthenticationAuthenticated(auto: true);
       } else {
         yield AuthenticationUnauthenticated();
@@ -31,13 +32,15 @@ class AuthenticationBloc
     }
     if (event is LoggedIn) {
       yield AuthenticationLoading();
-      await userRepository.persistAuth(event.token);
+      await userRepository.persistAuth(event.auth);
+      await userRepository.initDatabase();
       yield AuthenticationAuthenticated(auto: false);
     }
 
     if (event is LoggedOut) {
       yield AuthenticationLoading();
       await userRepository.deleteAuth();
+      await userRepository.deleteDatabase();
       yield AuthenticationUnauthenticated();
     }
   }

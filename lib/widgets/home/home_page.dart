@@ -96,19 +96,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.exit_to_app),
-                  tooltip: 'Logout',
-                  onPressed: () {
-                    _homeBloc.dispatch(LogoutButtonPressed());
-                  },
-                ),
-                IconButton(
                   icon: Icon(Icons.cloud),
-                  tooltip: 'Database test',
+                  tooltip: 'Sync',
                   onPressed: () async {
                     final DatabaseHelper dbHelper = DatabaseHelper.instance;
                     var result = await dbHelper.insertToJobQueue('test', 1);
                     print(result);
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.exit_to_app),
+                  tooltip: 'Logout',
+                  onPressed: () {
+                    _homeBloc.dispatch(LogoutButtonPressed());
                   },
                 ),
               ],

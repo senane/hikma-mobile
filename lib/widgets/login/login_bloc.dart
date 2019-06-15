@@ -32,7 +32,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           password: event.password,
         );
         if (token != null) {
-          authenticationBloc.dispatch(LoggedIn(token: token));
+          authenticationBloc.dispatch(LoggedIn(auth: token));
         }
         yield LoginInitial();
       } catch (error) {
