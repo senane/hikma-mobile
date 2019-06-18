@@ -62,6 +62,7 @@ class _AppState extends State<App> {
             } else {
               return LoginPage(userRepository: _userRepository);
             }
+            // TODO tweak here and make a splash screen
 //            if (state is AuthenticationUninitialized) {
 //              return SplashPage();
 //            }

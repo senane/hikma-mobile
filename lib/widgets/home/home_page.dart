@@ -10,6 +10,7 @@ import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/widgets/new_patient/new_patient.dart';
 import 'package:hikma_health/widgets/patient_details/patient_details.dart';
+import 'package:hikma_health/widgets/sync/sync.dart';
 
 import 'home.dart';
 
@@ -48,11 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-          setState(() async {
+          setState(() {
             _online = result != ConnectivityResult.none;
             if (_online) {
-              // TODO dispatch sync started event and/or block the UI with loading popup and handle the sync in the the bloc
-              await _userRepository.sync();
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return SyncView(userRepository: _userRepository);
+                  }
+              );
             }
           });
         });

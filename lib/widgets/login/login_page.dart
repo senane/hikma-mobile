@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/colors.dart';
@@ -40,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
     return BlocListener(
       bloc: _authenticationBloc,
       listener: (context, state) {
-        if (state is AuthenticationAuthenticated) {
+        if (state is AuthenticationAuthenticated && !state.auto) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) =>
