@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/model/session.dart';
@@ -96,7 +97,7 @@ Future<PatientPersonalInfo> getPatient({
   return PatientPersonalInfo.fromJson(responseJson);
 }
 
-Future<String> createPatient({@required auth, @required Map body}) async {
+Future<PatientIds> createPatient({@required auth, @required Map body}) async {
   var data = json.encode(body).replaceAll('"null"', 'null');
   var response = await http
       .post('$API_BASE/bahmnicore/patientprofile', body: data,
@@ -111,7 +112,8 @@ Future<String> createPatient({@required auth, @required Map body}) async {
   if (response.statusCode == 401) {
     return null;
   }
-  return response.body;
+  final responseJson = json.decode(response.body);
+  return PatientIds.fromJson(responseJson);
 }
 
 String createBasicAuth(String username, String password) =>

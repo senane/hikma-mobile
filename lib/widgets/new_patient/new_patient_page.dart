@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/constants.dart';
-import 'package:hikma_health/model/patient_post_data.dart';
+import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 
 import 'new_patient.dart';
@@ -380,8 +380,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
         birthDateEstimated: true,
         causeOfDeath: ''
     );
-
-    print('${_birthDate.toIso8601String().substring(0, 23)}+0100');
 
     final PatientData patient = PatientData(
         person: person.toMap(),
