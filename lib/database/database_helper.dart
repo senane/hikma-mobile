@@ -144,37 +144,69 @@ class DatabaseHelper {
     return linkId;
   }
 
+  Future<int> removeFromJobQueue(int id) async {
+    SQLiteDatabase db = await instance.database;
+
+  }
+
   Future<int> insertToPatients(Map data) async {
     SQLiteDatabase db = await instance.database;
     var linkId = db.insert(
-        table: tablePatients,
-        values: <String, dynamic>{
-          columnId: null, // auto-incremented ID assigned automatically
-          columnGivenName: data['patient']['person']['names'][0]['givenName'],
-          columnMiddleName: data['patient']['person']['names'][0]['middleName'],
-          columnFamilyName: data['patient']['person']['names'][0]['familyName'],
-          columnNamePreferred: false,
-//
-//          columnAddress1: data['patient']['person']['addresses']['address1'],
-//          columnAddress2: data['patient']['person']['addresses']['address2'],
-//          columnAddress3: data['patient']['person']['addresses']['address3'],
-//          columnCityVillage:
-//            data['patient']['person']['addresses']['cityVillage'],
-//          columnCountyDistrict:
-//            data['patient']['person']['addresses']['countyDistrict'],
-//          columnStateProvince:
-//            data['patient']['person']['addresses']['stateProvince'],
-//
-//          columnPIDIdentifierSourceUuid:
-//            data['patient']['identifiers'][1]['identifierSourceUuid'],
-//          columnPIDIdentifierPrefix:
-//            data['patient']['identifiers'][1]['identifierPrefix'],
-//          columnPIDIdentifierType:
-//            data['patient']['identifiers'][1]['identifierType'],
-//          columnPIDIdentifierPreferred:
-//            data['patient']['identifiers'][1]['identifierPreferred'],
-//          columnPIDIdentifierVoided:
-//            data['patient']['identifiers'][1]['identifierVoided'],
+      table: tablePatients,
+      values: <String, dynamic>{
+        columnId: null, // auto-incremented ID assigned automatically
+        columnGivenName: data['patient']['person']['names'][0]['givenName'],
+        columnMiddleName: data['patient']['person']['names'][0]['middleName'],
+        columnFamilyName: data['patient']['person']['names'][0]['familyName'],
+        columnNamePreferred: false,
+
+        columnAddress1: data['patient']['person']['addresses'][0]['address1'],
+        columnCityVillage:
+          data['patient']['person']['addresses'][0]['cityVillage'],
+        columnCountyDistrict:
+          data['patient']['person']['addresses'][0]['countyDistrict'],
+        columnStateProvince:
+          data['patient']['person']['addresses'][0]['stateProvince'],
+
+        columnPIDIdentifierSourceUuid:
+          data['patient']['identifiers'][0]['identifierSourceUuid'],
+        columnPIDIdentifierPrefix:
+          data['patient']['identifiers'][0]['identifierPrefix'],
+        columnPIDIdentifierType:
+          data['patient']['identifiers'][0]['identifierType'],
+        columnPIDIdentifierPreferred:
+          data['patient']['identifiers'][0]['identifierPreferred'],
+        columnPIDIdentifierVoided:
+          data['patient']['identifiers'][0]['identifierVoided'],
+
+        columnNIDIdentifierSourceUuid:
+          data['patient']['identifiers'][1]['identifierSourceUuid'],
+        columnNIDIdentifierPrefix:
+          data['patient']['identifiers'][1]['identifierPrefix'],
+        columnNIDIdentifierType:
+          data['patient']['identifiers'][1]['identifierType'],
+        columnNIDIdentifierPreferred:
+          data['patient']['identifiers'][1]['identifierPreferred'],
+        columnNIDIdentifierVoided:
+          data['patient']['identifiers'][1]['identifierVoided'],
+
+        columnFirstNameLocalUuid:
+          data['patient']['person']['attributes'][0]['attributeType']['uuid'],
+        columnFirstNameLocalValue:
+          data['patient']['person']['attributes'][0]['value'],
+        columnMiddleNameLocalUuid:
+          data['patient']['person']['attributes'][1]['attributeType']['uuid'],
+        columnMiddleNameLocalValue:
+          data['patient']['person']['attributes'][1]['value'],
+        columnLastNameLocalUuid:
+          data['patient']['person']['attributes'][2]['attributeType']['uuid'],
+        columnLastNameLocalValue:
+          data['patient']['person']['attributes'][2]['value'],
+
+        columnGender: data['patient']['gender'],
+        columnBirthDate: data['patient']['birthdate'],
+        columnBirthDateEstimated: data['patient']['birthdateEstimated'],
+        columnCauseOfDeath: data['patient']['causeOfDeath'],
         },
     );
     return linkId;

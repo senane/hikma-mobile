@@ -54,11 +54,19 @@ class UserRepository {
     return _dbHelper.deleteDatabase();
   }
 
+  // Adds a job (ie. create patient) to the job queue in the local database
   queueJob(int jobId, String data) async {
     await _dbHelper.insertToJobQueue(jobId, data);
     return data;
   }
 
+  // Adds a patient to the local database
+  addPatient(Map data) async {
+    await _dbHelper.insertToPatients(data);
+    return data;
+  }
+
+  // Executes the job queue
   sync() async {
     var jobs = await _dbHelper.queryJobs();
     for (var job in jobs) {
