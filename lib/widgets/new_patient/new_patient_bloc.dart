@@ -24,6 +24,8 @@ class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
       yield NewPatientLoading();
       String auth = await userRepository.readAuth();
       await createPatient(auth: auth, body: event.data);
+//      Functionality to be added later
+//      await userRepository.addPatient(event.data);
       yield NewPatientRegistered();
     }
   }
