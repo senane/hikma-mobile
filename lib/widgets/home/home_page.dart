@@ -108,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Sync',
                   onPressed: () async {
                     await _userRepository.queueJob(0, 'data');
-//                    await _userRepository.getPatientById('Alpha');
                   },
                 ),
                 IconButton(

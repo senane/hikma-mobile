@@ -47,6 +47,7 @@ class DatabaseHelper {
     return _database;
   }
 
+  // This needs some work
   Future<SQLiteDatabase> _initDatabase() async {
     var cacheDir = await Context.cacheDir;
     if (!cacheDir.existsSync()) {
