@@ -113,7 +113,7 @@ class DatabaseHelper {
     return SQLiteDatabase.deleteDatabase('${cacheDir.path}/cache.db');
   }
 
-  Future<int> insertToJobQueue(int jobId, String data) async {
+  Future<int> insertToJobQueue(int patientId, int jobId, String data) async {
     return _database.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
@@ -126,6 +126,7 @@ class DatabaseHelper {
   }
 
   removeFromJobQueue(int id) async {
+    return(null);
   }
 
   Future<int> insertToPatients(Map data) async {
