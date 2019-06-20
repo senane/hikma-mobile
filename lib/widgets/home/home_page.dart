@@ -104,10 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.cloud),
+                  icon: Icon(Icons.sync),
                   tooltip: 'Sync',
                   onPressed: () async {
-                    _userRepository.queueJob(0, 'data');
+                    await _userRepository.queueJob(0, 'data');
+//                    await _userRepository.getPatientById('Alpha');
                   },
                 ),
                 IconButton(
