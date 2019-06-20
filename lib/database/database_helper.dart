@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_android/android_content.dart' show Context;
 import 'package:flutter_sqlcipher/sqlite.dart';
+import 'package:hikma_health/model/patient.dart';
 
 class DatabaseHelper {
 
@@ -25,24 +26,13 @@ class DatabaseHelper {
   static final columnCountyDistrict = 'county_district';
   static final columnStateProvince = 'state_province';
 
-  static final columnPIDIdentifierSourceUuid = 'pid_identifier_source_uuid';
-  static final columnPIDIdentifierPrefix = 'pid_identifier_prefix';
-  static final columnPIDIdentifierType = 'pid_identifier_type';
-  static final columnPIDIdentifierPreferred = 'pid_identifier_preferred';
-  static final columnPIDIdentifierVoided = 'pid_identifier_voided';
+  static final columnUuid = 'uuid';
+  static final columnPID = 'pid';
+  static final columnNID = 'nid';
 
-  static final columnNIDIdentifierSourceUuid = 'nid_identifier_uuid';
-  static final columnNIDIdentifierPrefix = 'nid_identifier_prefix';
-  static final columnNIDIdentifierType = 'nid_identifier_type';
-  static final columnNIDIdentifierPreferred = 'nid_identifier_preferred';
-  static final columnNIDIdentifierVoided = 'nid_identifier_voided';
-
-  static final columnFirstNameLocalUuid = 'first_name_local_uuid';
-  static final columnFirstNameLocalValue = 'first_name_local_value';
-  static final columnMiddleNameLocalUuid = 'middle_name_local_uuid';
-  static final columnMiddleNameLocalValue = 'middle_name_local_value';
-  static final columnLastNameLocalUuid = 'last_name_local_uuid';
-  static final columnLastNameLocalValue = 'last_name_local_value';
+  static final columnFirstNameLocal = 'first_name_local';
+  static final columnMiddleNameLocal = 'middle_name_local';
+  static final columnLastNameLocal = 'last_name_local';
 
   static final columnGender = 'gender';
   static final columnBirthDate = 'birth_date';
@@ -58,6 +48,7 @@ class DatabaseHelper {
     return _database;
   }
 
+  // This needs some work
   Future<SQLiteDatabase> _initDatabase() async {
     var cacheDir = await Context.cacheDir;
     if (!cacheDir.existsSync()) {
@@ -98,24 +89,13 @@ class DatabaseHelper {
         $columnCountyDistrict TEXT,
         $columnStateProvince TEXT,
         
-        $columnPIDIdentifierSourceUuid TEXT,
-        $columnPIDIdentifierPrefix TEXT,
-        $columnPIDIdentifierType TEXT,
-        $columnPIDIdentifierPreferred BOOLEAN,
-        $columnPIDIdentifierVoided BOOLEAN,
-        
-        $columnNIDIdentifierSourceUuid TEXT,
-        $columnNIDIdentifierPrefix TEXT,
-        $columnNIDIdentifierType TEXT,
-        $columnNIDIdentifierPreferred BOOLEAN,
-        $columnNIDIdentifierVoided BOOLEAN,
+        $columnUuid TEXT,
+        $columnPID TEXT,
+        $columnNID TEXT,
 
-        $columnFirstNameLocalUuid TEXT,
-        $columnFirstNameLocalValue TEXT,
-        $columnMiddleNameLocalUuid TEXT,
-        $columnMiddleNameLocalValue TEXT,
-        $columnLastNameLocalUuid TEXT,
-        $columnLastNameLocalValue TEXT,
+        $columnFirstNameLocal TEXT,
+        $columnMiddleNameLocal TEXT,
+        $columnLastNameLocal TEXT,
         
         $columnGender TEXT,
         $columnBirthDate DATETIME,
@@ -133,9 +113,8 @@ class DatabaseHelper {
     return SQLiteDatabase.deleteDatabase('${cacheDir.path}/cache.db');
   }
 
-  Future<int> insertToJobQueue(int patientId, int jobId, String data) async {
-    SQLiteDatabase db = await instance.database;
-    var linkId = db.insert(
+  Future<int> insertToJobQueue(int jobId, String data) async {
+    return _database.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
@@ -144,19 +123,15 @@ class DatabaseHelper {
         columnData: data,
       },
     );
-    return linkId;
   }
 
-  Future<int> removeFromJobQueue(int id) async {
-    SQLiteDatabase db = await instance.database;
-
+  removeFromJobQueue(int id) async {
   }
 
   Future<int> insertToPatients(Map data) async {
-    SQLiteDatabase db = await instance.database;
-    var linkId = db.insert(
+    return _database.insert(
       table: tablePatients,
-      values: <String, dynamic>{
+      values: <String, dynamic> {
         columnId: null, // auto-incremented ID assigned automatically
         columnGivenName: data['patient']['person']['names'][0]['givenName'],
         columnMiddleName: data['patient']['person']['names'][0]['middleName'],
@@ -171,48 +146,33 @@ class DatabaseHelper {
         columnStateProvince:
           data['patient']['person']['addresses'][0]['stateProvince'],
 
-        columnPIDIdentifierSourceUuid:
-          data['patient']['identifiers'][0]['identifierSourceUuid'],
-        columnPIDIdentifierPrefix:
-          data['patient']['identifiers'][0]['identifierPrefix'],
-        columnPIDIdentifierType:
-          data['patient']['identifiers'][0]['identifierType'],
-        columnPIDIdentifierPreferred:
-          data['patient']['identifiers'][0]['identifierPreferred'],
-        columnPIDIdentifierVoided:
-          data['patient']['identifiers'][0]['identifierVoided'],
-
-        columnNIDIdentifierSourceUuid:
-          data['patient']['identifiers'][1]['identifierSourceUuid'],
-        columnNIDIdentifierPrefix:
-          data['patient']['identifiers'][1]['identifierPrefix'],
-        columnNIDIdentifierType:
-          data['patient']['identifiers'][1]['identifierType'],
-        columnNIDIdentifierPreferred:
-          data['patient']['identifiers'][1]['identifierPreferred'],
-        columnNIDIdentifierVoided:
-          data['patient']['identifiers'][1]['identifierVoided'],
-
-        columnFirstNameLocalUuid:
-          data['patient']['person']['attributes'][0]['attributeType']['uuid'],
-        columnFirstNameLocalValue:
+        columnFirstNameLocal:
           data['patient']['person']['attributes'][0]['value'],
-        columnMiddleNameLocalUuid:
-          data['patient']['person']['attributes'][1]['attributeType']['uuid'],
-        columnMiddleNameLocalValue:
+        columnMiddleNameLocal:
           data['patient']['person']['attributes'][1]['value'],
-        columnLastNameLocalUuid:
-          data['patient']['person']['attributes'][2]['attributeType']['uuid'],
-        columnLastNameLocalValue:
+        columnLastNameLocal:
           data['patient']['person']['attributes'][2]['value'],
 
         columnGender: data['patient']['gender'],
         columnBirthDate: data['patient']['birthdate'],
         columnBirthDateEstimated: data['patient']['birthdateEstimated'],
         columnCauseOfDeath: data['patient']['causeOfDeath'],
-        },
+      },
     );
-    return linkId;
+  }
+
+  updatePatientIds(int localId, PatientIds patientIds) async {
+    Map ids = patientIds.toMap();
+    await _database.update(
+      table: tablePatients,
+      values: <String, dynamic>{
+        columnUuid: ids['uuid'],
+        columnPID: ids['pid'],
+        columnNID: ids['nid'],
+      },
+      where: '$columnId = ?',
+      whereArgs: <String>[localId.toString()]
+    );
   }
 
   Future<SQLiteCursor> queryJobs() {
