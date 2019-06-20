@@ -107,12 +107,14 @@ class DatabaseHelper {
 
   /// Helper methods
 
+  /// Database Methods
   Future<bool> deleteDatabase() async {
     var cacheDir = await Context.cacheDir;
     _database = null;
     return SQLiteDatabase.deleteDatabase('${cacheDir.path}/cache.db');
   }
 
+  /// Job Queue methods
   Future<int> insertToJobQueue(int patientId, int jobId, String data) async {
     return _database.insert(
       table: tableJobQueue,
@@ -129,6 +131,11 @@ class DatabaseHelper {
     return(null);
   }
 
+  Future<SQLiteCursor> queryJobs() {
+    return _database.rawQuery('SELECT * FROM $tableJobQueue');
+  }
+
+  /// Patients Methods
   Future<int> insertToPatients(Map data) async {
     return _database.insert(
       table: tablePatients,
@@ -174,9 +181,5 @@ class DatabaseHelper {
       where: '$columnId = ?',
       whereArgs: <String>[localId.toString()]
     );
-  }
-
-  Future<SQLiteCursor> queryJobs() {
-    return _database.rawQuery('SELECT * FROM $tableJobQueue');
   }
 }
