@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_android/android_content.dart' show Context;
 import 'package:flutter_sqlcipher/sqlite.dart';
+import 'package:hikma_health/model/patient.dart';
 
 class DatabaseHelper {
 
@@ -24,8 +25,8 @@ class DatabaseHelper {
   static final columnCountyDistrict = 'county_district';
   static final columnStateProvince = 'state_province';
 
+  static final columnUuid = 'uuid';
   static final columnPID = 'pid';
-
   static final columnNID = 'nid';
 
   static final columnFirstNameLocal = 'first_name_local';
@@ -85,8 +86,8 @@ class DatabaseHelper {
         $columnCountyDistrict TEXT,
         $columnStateProvince TEXT,
         
+        $columnUuid TEXT,
         $columnPID TEXT,
-        
         $columnNID TEXT,
 
         $columnFirstNameLocal TEXT,
@@ -156,12 +157,19 @@ class DatabaseHelper {
     );
   }
 
-//  Future<SQLiteCursor> getPatientById(String id) async {
-////    return await _database.rawQuery(
-////        'SELECT * FROM $tablePatients WHERE $columnGivenName=$id'
-////    );
-//    return _database.getRec('patients', id);
-//  }
+  updatePatientIds(int localId, PatientIds patientIds) async {
+    Map ids = patientIds.toMap();
+    await _database.update(
+      table: tablePatients,
+      values: <String, dynamic>{
+        columnUuid: ids['uuid'],
+        columnPID: ids['pid'],
+        columnNID: ids['nid'],
+      },
+      where: '$columnId = ?',
+      whereArgs: <String>[localId.toString()]
+    );
+  }
 
   Future<SQLiteCursor> queryJobs() {
     return _database.rawQuery('SELECT * FROM $tableJobQueue');
