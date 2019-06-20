@@ -8,6 +8,7 @@ class DatabaseHelper {
 
   static final tableJobQueue = 'job_queue';
   static final columnId = 'id';
+  static final columnPatientId = 'patient_id';
   static final columnJobId = 'job_id';
   static final columnData = 'data';
 
@@ -68,6 +69,7 @@ class DatabaseHelper {
     await db.execSQL("""
       CREATE TABLE $tableJobQueue (
         $columnId INTEGER PRIMARY KEY,
+        $columnPatientId INTEGER, 
         $columnJobId INTEGER,
         $columnData TEXT NOT NULL
       )
@@ -116,6 +118,7 @@ class DatabaseHelper {
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
+        columnPatientId: patientId,
         columnJobId: jobId,
         columnData: data,
       },
