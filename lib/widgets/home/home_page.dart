@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.cloud),
                   tooltip: 'Sync',
                   onPressed: () async {
-                    _userRepository.queueJob(0, 'data');
+                    _userRepository.queueJob(0, 0, 'data');
                   },
                 ),
                 IconButton(
