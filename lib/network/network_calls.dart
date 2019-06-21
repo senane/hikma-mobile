@@ -97,8 +97,8 @@ Future<PatientPersonalInfo> getPatient({
   return PatientPersonalInfo.fromJson(responseJson);
 }
 
-Future<PatientIds> createPatient({@required auth, @required Map body}) async {
-  var data = json.encode(body).replaceAll('"null"', 'null');
+Future<PatientIds> createPatient({@required auth, @required String data}) async {
+//  var data = json.encode(body).replaceAll('"null"', 'null');
   var response = await http
       .post('$API_BASE/bahmnicore/patientprofile', body: data,
       headers: {'authorization': auth, 'content-type': 'application/json'})
