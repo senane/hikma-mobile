@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_android/android_content.dart' show Context;
@@ -115,14 +116,15 @@ class DatabaseHelper {
   }
 
   /// Job Queue methods
-  Future<int> insertToJobQueue(int patientId, int jobId, String data) async {
+  Future<int> insertToJobQueue(int patientId, int jobId, Map data) async {
+    var body = json.encode(data).replaceAll('"null"', 'null');
     return _database.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
         columnPatientId: patientId,
         columnJobId: jobId,
-        columnData: data,
+        columnData: body,
       },
     );
   }
@@ -182,4 +184,13 @@ class DatabaseHelper {
       whereArgs: <String>[localId.toString()]
     );
   }
+
+//  getPatientByLocalId(int localId) async {
+//    String id = localId.toString();
+//    SQLiteCursor row = await _database.query(
+//        table: tablePatients,
+//        where: '$columnId = $id',
+//    );
+//    return row.getColumnNames();
+//  }
 }

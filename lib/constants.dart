@@ -5,3 +5,5 @@ const Map UUID_MAP = {
   'patientIdentifier': '81433852-3f10-11e4-adec-0800271c1b75',
   'nationalIdentifier': '0d2ac572-8de3-46c8-9976-1f78899c599f'
 };
+
+const JOB_CREATE_PATIENT = 0;
