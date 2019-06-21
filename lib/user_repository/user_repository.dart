@@ -66,6 +66,7 @@ class UserRepository {
     return await _dbHelper.insertToPatients(data);
   }
 
+  // Adds PID and NID info to a patient in the local database
   updateCreatedPatient(int localId, PatientIds patientIds) async {
     return await _dbHelper.updatePatientIds(localId, patientIds);
   }
@@ -73,8 +74,9 @@ class UserRepository {
   // Executes the job queue
   sync() async {
     var jobs = await _dbHelper.queryJobs();
+    String auth = await readAuth();
     for (var job in jobs) {
-      synchronise(job);
+      synchronise(auth, job, _dbHelper);
     }
   }
 }

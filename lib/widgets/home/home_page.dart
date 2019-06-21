@@ -107,7 +107,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.sync),
                   tooltip: 'Sync',
                   onPressed: () async {
-                    await _userRepository.queueJob(0, 0, {});
+//                    await _userRepository.sync();
+                    setState(() {
+                      if (_online) {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return SyncView(userRepository: _userRepository);
+                            }
+                        );
+                      }
+                    });
                   },
                 ),
                 IconButton(

@@ -130,7 +130,11 @@ class DatabaseHelper {
   }
 
   removeFromJobQueue(int id) async {
-    return(null);
+    return _database.delete(
+      table: tableJobQueue,
+      where: 'id = ?',
+      whereArgs: <String>[id.toString()],
+    );
   }
 
   Future<SQLiteCursor> queryJobs() {
@@ -185,12 +189,11 @@ class DatabaseHelper {
     );
   }
 
-//  getPatientByLocalId(int localId) async {
-//    String id = localId.toString();
-//    SQLiteCursor row = await _database.query(
-//        table: tablePatients,
-//        where: '$columnId = $id',
-//    );
-//    return row.getColumnNames();
-//  }
+  Future<SQLiteCursor> getPatientByLocalId(int localId) async {
+    String id = localId.toString();
+    return _database.query(
+        table: tablePatients,
+        where: '$columnId = $id',
+    );
+  }
 }
