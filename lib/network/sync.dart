@@ -16,7 +16,7 @@ synchronise(String auth, job, DatabaseHelper dbHelper) async {
     print(job);
 
     if (patientIds != null) {
-      await dbHelper.updatePatientIds(job['patient_id'], patientIds);
+      await dbHelper.updatePatientIds(job['record_id'], patientIds);
       await dbHelper.removeFromJobQueue(job['id']);
 
       String idString = job['id'].toString();

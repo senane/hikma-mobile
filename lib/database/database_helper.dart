@@ -8,7 +8,7 @@ class DatabaseHelper {
 
   static final tableJobQueue = 'job_queue';
   static final columnId = 'id';
-  static final columnPatientId = 'patient_id';
+  static final columnRecordId = 'record_id';
   static final columnJobId = 'job_id';
   static final columnData = 'data';
 
@@ -48,7 +48,6 @@ class DatabaseHelper {
     return _database;
   }
 
-  // This needs some work
   Future<SQLiteDatabase> _initDatabase() async {
     var cacheDir = await Context.cacheDir;
     if (!cacheDir.existsSync()) {
@@ -56,10 +55,9 @@ class DatabaseHelper {
     }
     // Careful here
     var cacheFile = File('${cacheDir.path}/cache.db');
-    if (cacheFile.existsSync()) {
-      _database = await SQLiteDatabase.openOrCreateDatabase(cacheFile.path);
-    } else {
-      _database = await SQLiteDatabase.openOrCreateDatabase(cacheFile.path);
+    bool newDatabase = !(cacheFile.existsSync());
+    _database = await SQLiteDatabase.openOrCreateDatabase(cacheFile.path);
+    if (newDatabase) {
       await _onCreate(_database);
     }
     return _database;
@@ -69,7 +67,7 @@ class DatabaseHelper {
     await db.execSQL("""
       CREATE TABLE $tableJobQueue (
         $columnId INTEGER PRIMARY KEY,
-        $columnPatientId INTEGER, 
+        $columnRecordId INTEGER, 
         $columnJobId INTEGER,
         $columnData TEXT NOT NULL
       )
@@ -120,7 +118,7 @@ class DatabaseHelper {
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
-        columnPatientId: patientId,
+        columnRecordId: patientId,
         columnJobId: jobId,
         columnData: data,
       },
