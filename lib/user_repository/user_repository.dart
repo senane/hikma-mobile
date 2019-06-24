@@ -56,7 +56,7 @@ class UserRepository {
   }
 
   // Adds a job (ie. create patient) to the job queue in the local database
-  queueJob(int patientId, int jobId, Map data) async {
+  queueJob(int patientId, int jobId, String data) async {
     await _dbHelper.insertToJobQueue(patientId, jobId, data);
     return data;
   }
