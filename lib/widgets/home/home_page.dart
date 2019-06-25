@@ -104,10 +104,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.cloud),
+                  icon: Icon(Icons.sync),
                   tooltip: 'Sync',
                   onPressed: () async {
-                    _userRepository.queueJob(0, 'data');
+//                    await _userRepository.sync();
+                    setState(() {
+                      if (_online) {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return SyncView(userRepository: _userRepository);
+                            }
+                        );
+                      }
+                    });
                   },
                 ),
                 IconButton(

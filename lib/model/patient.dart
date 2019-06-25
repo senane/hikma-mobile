@@ -263,4 +263,13 @@ class PatientIds {
         nationalId: identifiers[UUID_MAP['nationalIdentifier']],
     );
   }
+
+  Map toMap() {
+    var map = new Map<String, dynamic>();
+    map['uuid'] = uuid;
+    map['pid'] = patientId;
+    map['nid'] = nationalId;
+
+    return map;
+  }
 }
