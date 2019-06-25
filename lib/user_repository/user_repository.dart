@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/database/database_helper.dart';
+import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/network/sync.dart';
 import 'package:meta/meta.dart';
@@ -80,5 +80,9 @@ class UserRepository {
     for (var patient in patients) {
       updatePatient(auth, patient, _dbHelper);
     }
+  }
+
+  downloadOnlinePatient(PatientPersonalInfo info) async {
+    _dbHelper.addPatientFromPatientInfo(info);
   }
 }

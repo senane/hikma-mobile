@@ -138,7 +138,7 @@ class DatabaseHelper {
   }
 
   /// Patients Methods
-  Future<int> insertToPatients(Map data) async {
+  Future<int> insertToPatients(Map data) {
     return _database.insert(
       table: tablePatients,
       values: <String, dynamic> {
@@ -169,6 +169,24 @@ class DatabaseHelper {
         columnCauseOfDeath: data['patient']['causeOfDeath'],
       },
     );
+  }
+
+  addPatientFromPatientInfo(PatientPersonalInfo info) async {
+    SQLiteCursor localVersion = await _database.query(
+      table: tablePatients,
+      where: '$columnUuid = ?',
+      whereArgs: [info.uuid],
+    );
+    if (localVersion.getCount() == 0) {
+      _database.insert(
+          table: tablePatients,
+          values: <String, dynamic>{
+            columnUuid: info.uuid,
+            // Option: we can add more fields here, or we could just let them
+            // get populated during the next sync event.
+          }
+      );
+    };
   }
 
   updatePatientIds(int localId, PatientIds patientIds) async {
