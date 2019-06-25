@@ -28,7 +28,7 @@ class PatientDetailsBloc extends Bloc<PatientDetailsEvent, PatientDetailsState> 
           auth: auth,
           uuid: event.uuid
       );
-      userRepository.downloadOnlinePatient(patientData);
+      userRepository.addOnlinePatient(patientData);
       yield PatientDetailsLoaded(patientData: patientData);
     }
   }

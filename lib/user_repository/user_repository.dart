@@ -82,7 +82,7 @@ class UserRepository {
     }
   }
 
-  downloadOnlinePatient(PatientPersonalInfo info) async {
-    _dbHelper.addPatientFromPatientInfo(info);
+  addOnlinePatient(PatientPersonalInfo info) async {
+    _dbHelper.insertPatientFromPatientInfo(info);
   }
 }

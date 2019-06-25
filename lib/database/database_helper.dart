@@ -171,7 +171,7 @@ class DatabaseHelper {
     );
   }
 
-  addPatientFromPatientInfo(PatientPersonalInfo info) async {
+  insertPatientFromPatientInfo(PatientPersonalInfo info) async {
     SQLiteCursor localVersion = await _database.query(
       table: tablePatients,
       where: '$columnUuid = ?',
