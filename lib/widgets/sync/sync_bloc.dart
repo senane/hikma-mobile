@@ -19,9 +19,10 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
     if (event is SyncStarted) {
       yield SyncLoading();
       try {
-        await userRepository.sync();
+        await userRepository.executeJobs();
+        await userRepository.updatePatients();
         // temporary simulation of the sync time
-        await Future.delayed(Duration(seconds: 3));
+        await Future.delayed(Duration(seconds: 2));
         yield SyncSuccess();
       } catch (error) {
         yield SyncFailure(error: error);

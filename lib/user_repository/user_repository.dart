@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/database/database_helper.dart';
-import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/network/sync.dart';
 import 'package:meta/meta.dart';
@@ -66,17 +65,20 @@ class UserRepository {
     return await _dbHelper.insertToPatients(data);
   }
 
-  // Adds PID and NID info to a patient in the local database
-  updateCreatedPatient(int localId, PatientIds patientIds) async {
-    return await _dbHelper.updatePatientIds(localId, patientIds);
-  }
-
   // Executes the job queue
-  sync() async {
-    var jobs = await _dbHelper.queryJobs();
+  executeJobs() async {
+    SQLiteCursor jobs = await _dbHelper.queryJobs();
     String auth = await readAuth();
     for (var job in jobs) {
-      synchronise(auth, job, _dbHelper);
+      await executeJob(auth, job, _dbHelper);
+    }
+  }
+
+  updatePatients() async {
+    SQLiteCursor patients = await _dbHelper.queryPatients();
+    String auth = await readAuth();
+    for (var patient in patients) {
+      updatePatient(auth, patient, _dbHelper);
     }
   }
 }

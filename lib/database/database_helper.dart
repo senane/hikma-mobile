@@ -185,6 +185,21 @@ class DatabaseHelper {
     );
   }
 
+  Future<SQLiteCursor> queryPatients() {
+    return _database.rawQuery('SELECT * FROM $tablePatients');
+  }
+
+  updateLocalPatientData(int localId, PatientPersonalInfo info) async {
+    _database.update(
+      table: tablePatients,
+      values: <String, dynamic>{
+        columnGivenName: info.firstName,
+      },
+      where: '$columnId = ?',
+      whereArgs: <String>[localId.toString()]
+    );
+  }
+
   Future<SQLiteCursor> getPatientByLocalId(int localId) async {
     String id = localId.toString();
     return _database.query(

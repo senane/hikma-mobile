@@ -5,7 +5,7 @@ import 'package:hikma_health/model/patient.dart';
 import '../constants.dart';
 import 'network_calls.dart';
 
-synchronise(String auth, job, DatabaseHelper dbHelper) async {
+executeJob(String auth, job, DatabaseHelper dbHelper) async {
 
   final int jobId = await job['job_id'];
 
@@ -24,4 +24,12 @@ synchronise(String auth, job, DatabaseHelper dbHelper) async {
     }
 
   }
+}
+
+updatePatient(String auth, patient, DatabaseHelper dbHelper) async {
+  print(patient);
+  await dbHelper.updateLocalPatientData(
+      patient['id'],
+      await getPatient(auth: auth, uuid: patient['uuid'])
+  );
 }
