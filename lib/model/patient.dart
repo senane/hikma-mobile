@@ -1,3 +1,4 @@
+import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/constants.dart';
 import 'package:meta/meta.dart';
 
@@ -10,6 +11,11 @@ class PatientSearchResult {
       : id = jsonMap['identifier'],
         uuid = jsonMap['uuid'],
         name = '${jsonMap['givenName']} ${jsonMap['familyName']}';
+
+  PatientSearchResult.fromRow(row)
+      : id = row['pid'],
+        uuid = row['uuid'],
+        name = (row['first_name'] + ' ' + row['family_name']);
 }
 
 class PatientSearchList {
@@ -19,6 +25,14 @@ class PatientSearchList {
       : patientSearchList = List<PatientSearchResult>() {
     for (var jsonPatient in jsonMap['pageOfResults']) {
       patientSearchList.add(PatientSearchResult.fromJson(jsonPatient));
+    }
+  }
+
+  PatientSearchList.fromCursor(SQLiteCursor rows)
+      : patientSearchList = List<PatientSearchResult> () {
+    for (var row in rows) {
+      print(row);
+      patientSearchList.add(PatientSearchResult.fromRow(row));
     }
   }
 }

@@ -19,6 +19,20 @@ class SearchButtonPressed extends HomeEvent {
       'SearchButtonPressed { query: $query, locationUuid, $locationUuid }';
 }
 
+class SearchButtonPressedOffline extends HomeEvent {
+  final String query;
+  final String locationUuid;
+
+  SearchButtonPressedOffline({
+    @required this.query,
+    @required this.locationUuid,
+  }) : super([query, locationUuid]);
+
+  @override
+  String toString() =>
+      'SearchButtonPressedOffline { query: $query, locationUuid, $locationUuid }';
+}
+
 class ClearButtonPressed extends HomeEvent {
   @override
   String toString() => 'ClearButtonPressed';

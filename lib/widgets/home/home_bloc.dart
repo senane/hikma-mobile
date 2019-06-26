@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
@@ -31,17 +32,30 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       try {
         String auth = await userRepository.readAuth();
         List<PatientSearchResult> patients =
-        await queryPatient(
-            auth: auth,
-            locationUuid: event.locationUuid,
-            query: event.query);
+          await queryPatient(
+              auth: auth,
+              locationUuid: event.locationUuid,
+              query: event.query);
         if (patients != null) {
           yield HomeInitial(query: event.query, patients: patients);
         }
         else {
           yield _emptyState;
         }
-      } catch (error) {
+      } catch (error) {}
+    } else if (event is SearchButtonPressedOffline) {
+      SQLiteCursor cursor =
+      await userRepository.queryLocalPatient(event.query);
+      print('heloo');
+      List<PatientSearchResult> patients =
+          PatientSearchList
+              .fromCursor(cursor)
+              .patientSearchList;
+      if (patients != null) {
+        yield HomeInitial(query: event.query, patients: patients);
+      }
+      else {
+        yield _emptyState;
       }
     } else if (event is ClearButtonPressed) {
       yield HomeLoading();

@@ -20,7 +20,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
       yield SyncLoading();
       try {
         await userRepository.executeJobs();
-        await userRepository.updatePatients();
+        await userRepository.updateAllPatients();
         // temporary simulation of the sync time
         await Future.delayed(Duration(seconds: 2));
         yield SyncSuccess();

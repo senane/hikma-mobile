@@ -74,15 +74,26 @@ class UserRepository {
     }
   }
 
-  updatePatients() async {
-    SQLiteCursor patients = await _dbHelper.queryPatients();
-    String auth = await readAuth();
+  updateAllPatients() async {
+    SQLiteCursor patients = await _dbHelper.queryLocalPatients();
     for (var patient in patients) {
-      updatePatient(auth, patient, _dbHelper);
+      PatientPersonalInfo info = await getPatient(
+          auth: await readAuth(),
+          uuid: patient['uuid']
+      );
+      await addOrUpdatePatient(info);
     }
   }
 
-  addOnlinePatient(PatientPersonalInfo info) async {
-    _dbHelper.insertPatientFromPatientInfo(info);
+  addOrUpdatePatient(PatientPersonalInfo info) async {
+    await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
+  }
+
+  updatePatientIds(int localId, PatientIds patientIds) async {
+    await _dbHelper.updateLocalPatientIds(localId, patientIds);
+  }
+
+  Future<SQLiteCursor> queryLocalPatient (String query) async {
+    return await _dbHelper.searchPatients(query);
   }
 }

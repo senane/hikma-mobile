@@ -171,25 +171,38 @@ class DatabaseHelper {
     );
   }
 
-  insertPatientFromPatientInfo(PatientPersonalInfo info) async {
-    SQLiteCursor localVersion = await _database.query(
+  insertOrUpdatePatientFromPersonalInfo(PatientPersonalInfo info) async {
+    bool exists = await patientExists(info);
+    if (!exists) {
+      await _database.insert(
+          table: tablePatients,
+          values: <String, dynamic>{
+            columnUuid: info.uuid,
+          }
+      );
+    }
+    await _database.update(
+        table: tablePatients,
+        values: <String, dynamic>{
+          columnGivenName: info.firstName,
+          columnFamilyName: info.lastName,
+          columnPID: info.patientId,
+        },
+        where: '$columnUuid = ?',
+        whereArgs: <String>[info.uuid]
+    );
+  }
+
+  Future<bool> patientExists(PatientPersonalInfo info) async {
+    SQLiteCursor localVersions = await _database.query(
       table: tablePatients,
       where: '$columnUuid = ?',
       whereArgs: [info.uuid],
     );
-    if (localVersion.getCount() == 0) {
-      _database.insert(
-          table: tablePatients,
-          values: <String, dynamic>{
-            columnUuid: info.uuid,
-            // Option: we can add more fields here, or we could just let them
-            // get populated during the next sync event.
-          }
-      );
-    };
+    return (localVersions.getCount() > 0);
   }
 
-  updatePatientIds(int localId, PatientIds patientIds) async {
+  updateLocalPatientIds(int localId, PatientIds patientIds) async {
     Map ids = patientIds.toMap();
     await _database.update(
       table: tablePatients,
@@ -203,26 +216,26 @@ class DatabaseHelper {
     );
   }
 
-  Future<SQLiteCursor> queryPatients() {
+  Future<SQLiteCursor> queryLocalPatients() {
     return _database.rawQuery('SELECT * FROM $tablePatients');
   }
 
-  updateLocalPatientData(int localId, PatientPersonalInfo info) async {
-    _database.update(
+  Future<Map<String, dynamic>> getPatientByUuid(String uuid) async {
+    SQLiteCursor patients = await _database.query(
       table: tablePatients,
-      values: <String, dynamic>{
-        columnGivenName: info.firstName,
-      },
-      where: '$columnId = ?',
-      whereArgs: <String>[localId.toString()]
+      where: '$columnUuid = $uuid',
     );
+    return patients.first;
   }
 
-  Future<SQLiteCursor> getPatientByLocalId(int localId) async {
-    String id = localId.toString();
-    return _database.query(
-        table: tablePatients,
-        where: '$columnId = $id',
+  Future<SQLiteCursor> searchPatients(String query) async {
+    print("hi");
+    return _database.rawQuery(
+        "SELECT * FROM $tablePatients "
+            "WHERE ($columnGivenName LIKE '%$query%' "
+            "OR $columnMiddleName LIKE '%$query%' "
+            "OR $columnFamilyName LIKE '%$query%') "
+            "AND $columnPID IS NOT NULL "
     );
   }
 }

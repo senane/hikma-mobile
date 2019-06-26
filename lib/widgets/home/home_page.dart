@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,7 +10,6 @@ import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/widgets/new_patient/new_patient.dart';
 import 'package:hikma_health/widgets/patient_details/patient_details.dart';
 import 'package:hikma_health/widgets/sync/sync.dart';
-
 import 'home.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,7 +25,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _fieldEmpty = true, _online = true;
+  bool _fieldEmpty = true, _online = false;
   String _basicAuth;
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
@@ -48,7 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
         authenticationBloc: _authenticationBloc
     );
     _connectivitySubscription =
-        Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+        Connectivity().onConnectivityChanged.listen(
+                (ConnectivityResult result) {
           setState(() {
             _online = result != ConnectivityResult.none;
             if (_online) {
@@ -71,8 +70,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (state is HomeLogout) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) =>
-                LoginPage(userRepository: _userRepository)),
+            MaterialPageRoute(
+                builder: (context) =>
+                LoginPage(userRepository: _userRepository)
+            ),
           );
         }
         else if (state is HomeInitial) {
@@ -99,7 +100,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) =>
-                          PatientRegistrationPage(userRepository: _userRepository)),
+                          PatientRegistrationPage(
+                              userRepository: _userRepository
+                          )
+                      ),
                     );
                   },
                 ),
@@ -107,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.sync),
                   tooltip: 'Sync',
                   onPressed: () async {
-//                    await _userRepository.sync();
                     setState(() {
                       if (_online) {
                         showDialog(
@@ -246,12 +249,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _searchPatient(String locationUuid, String query, BuildContext context) async {
+  void _searchPatient(
+      String locationUuid,
+      String query,
+      BuildContext context) async {
     if (_searchController.text.isNotEmpty) {
       _searchNode.unfocus();
-      _homeBloc.dispatch(
-          SearchButtonPressed(locationUuid: locationUuid, query: query)
-      );
+      if (_online) {
+        _homeBloc.dispatch(
+            SearchButtonPressed(locationUuid: locationUuid, query: query)
+        );
+      } else {
+        _homeBloc.dispatch(
+            SearchButtonPressedOffline(
+                locationUuid: locationUuid,
+                query: query
+            )
+        );
+      }
     }
   }
 }

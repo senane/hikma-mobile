@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import 'package:hikma_health/database/database_helper.dart';
 import 'package:hikma_health/model/patient.dart';
+import 'package:hikma_health/user_repository/user_repository.dart';
 import '../constants.dart';
 import 'network_calls.dart';
+
+UserRepository userRepository;
 
 executeJob(String auth, job, DatabaseHelper dbHelper) async {
 
@@ -16,20 +19,11 @@ executeJob(String auth, job, DatabaseHelper dbHelper) async {
     print(job);
 
     if (patientIds != null) {
-      await dbHelper.updatePatientIds(job['record_id'], patientIds);
+      await userRepository.updatePatientIds(job['record_id'], patientIds);
       await dbHelper.removeFromJobQueue(job['id']);
 
       String idString = job['id'].toString();
       print('removed job $idString');
     }
-
   }
-}
-
-updatePatient(String auth, patient, DatabaseHelper dbHelper) async {
-  print(patient);
-  await dbHelper.updateLocalPatientData(
-      patient['id'],
-      await getPatient(auth: auth, uuid: patient['uuid'])
-  );
 }
