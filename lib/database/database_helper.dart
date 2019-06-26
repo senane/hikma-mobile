@@ -229,12 +229,12 @@ class DatabaseHelper {
   }
 
   Future<SQLiteCursor> searchPatients(String query) async {
-    print("hi");
     return _database.rawQuery(
         "SELECT * FROM $tablePatients "
             "WHERE ($columnGivenName LIKE '%$query%' "
             "OR $columnMiddleName LIKE '%$query%' "
-            "OR $columnFamilyName LIKE '%$query%') "
+            "OR $columnFamilyName LIKE '%$query%' "
+            "OR $columnPID LIKE '%$query%') "
             "AND $columnPID IS NOT NULL "
     );
   }

@@ -46,7 +46,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } else if (event is SearchButtonPressedOffline) {
       SQLiteCursor cursor =
       await userRepository.queryLocalPatient(event.query);
-      print('heloo');
       List<PatientSearchResult> patients =
           PatientSearchList
               .fromCursor(cursor)

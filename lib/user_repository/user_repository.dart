@@ -89,10 +89,6 @@ class UserRepository {
     await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
   }
 
-  updatePatientIds(int localId, PatientIds patientIds) async {
-    await _dbHelper.updateLocalPatientIds(localId, patientIds);
-  }
-
   Future<SQLiteCursor> queryLocalPatient (String query) async {
     return await _dbHelper.searchPatients(query);
   }
