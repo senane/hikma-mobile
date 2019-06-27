@@ -2,11 +2,8 @@ import 'dart:convert';
 
 import 'package:hikma_health/database/database_helper.dart';
 import 'package:hikma_health/model/patient.dart';
-import 'package:hikma_health/user_repository/user_repository.dart';
 import '../constants.dart';
 import 'network_calls.dart';
-
-UserRepository userRepository;
 
 executeJob(String auth, job, DatabaseHelper dbHelper) async {
 

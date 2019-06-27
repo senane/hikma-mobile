@@ -28,7 +28,7 @@ class PatientDetailsBloc extends Bloc<PatientDetailsEvent, PatientDetailsState> 
           auth: auth,
           uuid: event.uuid
       );
-      userRepository.addOrUpdatePatient(patientData);
+      userRepository.dbHelper.insertOrUpdatePatientFromPersonalInfo(patientData);
       yield PatientDetailsLoaded(patientData: patientData);
     }
   }

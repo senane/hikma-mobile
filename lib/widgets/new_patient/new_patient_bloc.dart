@@ -24,8 +24,10 @@ class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
     if (event is SaveButtonClicked) {
       yield NewPatientLoading();
       var data = json.encode(event.data).replaceAll('"null"', 'null');
-      int patientLocalId = await userRepository.addPatient(event.data);
-      await userRepository.queueJob(patientLocalId, JOB_CREATE_PATIENT, data);
+      int patientLocalId = await userRepository.dbHelper
+          .insertToPatients(event.data);
+      await userRepository.dbHelper
+          .insertToJobQueue(patientLocalId, JOB_CREATE_PATIENT, data);
       yield NewPatientRegistered();
     }
   }
