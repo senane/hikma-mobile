@@ -6,16 +6,19 @@ class PatientSearchResult {
   final String id;
   final String uuid;
   final String name;
+  final int localId;
 
   PatientSearchResult.fromJson(Map jsonMap)
       : id = jsonMap['identifier'],
         uuid = jsonMap['uuid'],
-        name = '${jsonMap['givenName']} ${jsonMap['familyName']}';
+        name = '${jsonMap['givenName']} ${jsonMap['familyName']}',
+        localId = null;
 
   PatientSearchResult.fromRow(row)
-      : id = row['pid'],
-        uuid = row['uuid'],
-        name = (row['first_name'] + ' ' + row['family_name']);
+      : id = row[columnPID],
+        uuid = row[columnUuid],
+        name = (row[columnGivenName] + ' ' + row[columnFamilyName]),
+        localId = row[columnId];
 }
 
 class PatientSearchList {
@@ -31,7 +34,6 @@ class PatientSearchList {
   PatientSearchList.fromCursor(SQLiteCursor rows)
       : patientSearchList = List<PatientSearchResult> () {
     for (var row in rows) {
-      print(row);
       patientSearchList.add(PatientSearchResult.fromRow(row));
     }
   }
@@ -61,6 +63,33 @@ class PatientPersonalInfo {
     @required this.district,
     @required this.state
   });
+
+  factory PatientPersonalInfo.fromRow(Map<String, dynamic> row) {
+    void nullToString(key, value) {
+      if (value == '') {
+        row[key] = 'null';
+      }
+    }
+    row.forEach(nullToString);
+    print(row);
+    return PatientPersonalInfo(
+        uuid: row[columnUuid],
+        patientId: row[columnPID],
+        nationalId: row[columnNID],
+        firstName: row[columnGivenName],
+        middleName: row[columnMiddleName],
+        lastName: row[columnFamilyName],
+        birthDate: row[columnBirthDate].toString().substring(0, 10),
+        gender: row[columnGender],
+        firstNameLocal: row[columnFirstNameLocal],
+        middleNameLocal: row[columnMiddleNameLocal],
+        lastNameLocal: row[columnLastNameLocal],
+        address: row[columnAddress1],
+        cityVillage: row[columnCityVillage],
+        district: row[columnCountyDistrict],
+        state: row[columnStateProvince],
+    );
+  }
 
   factory PatientPersonalInfo.fromJson(Map<String, dynamic> jsonMap) {
 

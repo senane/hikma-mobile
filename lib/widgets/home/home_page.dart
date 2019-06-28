@@ -238,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) => PatientDetailsScreen(
                     uuid: patientsList[index].uuid,
+                    localId: patientsList[index].localId,
                     userRepository: _userRepository,
                   ),
                 ),

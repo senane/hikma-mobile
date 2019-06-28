@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/database/database_helper.dart';
@@ -79,11 +80,25 @@ class UserRepository {
   updateAllPatients() async {
     SQLiteCursor patients = await dbHelper.queryLocalPatients();
     for (var patient in patients) {
-      PatientPersonalInfo info = await getPatient(
-          auth: await readAuth(),
-          uuid: patient['uuid']
-      );
-      await dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
+      insertOrUpdatePatientByUuid(patient['uuid']);
     }
+  }
+
+  Future<int> insertOrUpdatePatientByUuid(String uuid) async {
+    PatientPersonalInfo info = await getPatient(
+        auth: await readAuth(),
+        uuid: uuid
+    );
+    return await dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
+  }
+
+  Future<PatientPersonalInfo> getLocalPatientInfo(int localId, String uuid) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      localId = await insertOrUpdatePatientByUuid(uuid);
+    }
+    print(localId);
+    Map<String, dynamic> row = await dbHelper.getPatientByLocalId(localId);
+    return PatientPersonalInfo.fromRow(row);
   }
 }
