@@ -67,11 +67,10 @@ class PatientPersonalInfo {
   factory PatientPersonalInfo.fromRow(Map<String, dynamic> row) {
     void nullToString(key, value) {
       if (value == '') {
-        row[key] = 'null';
+        row[key] = ' ';
       }
     }
     row.forEach(nullToString);
-    print(row);
     return PatientPersonalInfo(
         uuid: row[columnUuid],
         patientId: row[columnPID],

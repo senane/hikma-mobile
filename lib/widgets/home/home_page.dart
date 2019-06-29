@@ -47,7 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen(
-                (ConnectivityResult result) {
+                (ConnectivityResult result) async {
+          _homeBloc.dispatch(ClearButtonPressed());
           setState(() {
             _online = result != ConnectivityResult.none;
             if (_online) {
@@ -107,22 +108,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
-                IconButton(
-                  icon: Icon(Icons.sync),
-                  tooltip: 'Sync',
-                  onPressed: () async {
-                    setState(() {
-                      if (_online) {
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return SyncView(userRepository: _userRepository);
-                            }
-                        );
-                      }
-                    });
-                  },
-                ),
+                _online
+                    ? IconButton(
+                      icon: Icon(Icons.sync),
+                      tooltip: 'Sync',
+                      onPressed: () async {
+                        _homeBloc.dispatch(ClearButtonPressed());
+                        setState(() {
+                          if (_online) {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return SyncView(userRepository: _userRepository);
+                                }
+                            );
+                          }
+                        });
+                      },
+                    )
+                    : Container(width: 0, height: 0),
                 IconButton(
                   icon: Icon(Icons.exit_to_app),
                   tooltip: 'Logout',
@@ -258,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _searchNode.unfocus();
       if (_online) {
         _homeBloc.dispatch(
-            SearchButtonPressed(locationUuid: locationUuid, query: query)
+            SearchButtonPressedOnline(locationUuid: locationUuid, query: query)
         );
       } else {
         _homeBloc.dispatch(

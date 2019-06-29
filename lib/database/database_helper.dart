@@ -132,8 +132,8 @@ class DatabaseHelper {
         columnLastNameLocal:
           data['patient']['person']['attributes'][2]['value'],
 
-        columnGender: data['patient']['gender'],
-        columnBirthDate: data['patient']['birthdate'],
+        columnGender: data['patient']['person']['gender'],
+        columnBirthDate: data['patient']['person']['birthdate'],
       },
     );
   }

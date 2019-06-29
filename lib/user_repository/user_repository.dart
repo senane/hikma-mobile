@@ -97,7 +97,6 @@ class UserRepository {
     if (connectivityResult != ConnectivityResult.none) {
       localId = await insertOrUpdatePatientByUuid(uuid);
     }
-    print(localId);
     Map<String, dynamic> row = await dbHelper.getPatientByLocalId(localId);
     return PatientPersonalInfo.fromRow(row);
   }

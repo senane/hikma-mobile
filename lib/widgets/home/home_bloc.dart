@@ -27,7 +27,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   @override
   Stream<HomeState> mapEventToState(HomeEvent event) async* {
 
-    if (event is SearchButtonPressed) {
+    if (event is SearchButtonPressedOnline) {
       yield HomeLoading();
       try {
         String auth = await userRepository.readAuth();
@@ -44,12 +44,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         }
       } catch (error) {}
     } else if (event is SearchButtonPressedOffline) {
-      SQLiteCursor cursor =
-      await userRepository.dbHelper.searchPatients(event.query);
+      yield HomeLoading();
+      SQLiteCursor cursor = await userRepository
+          .dbHelper.searchPatients(event.query);
       List<PatientSearchResult> patients =
-          PatientSearchList
-              .fromCursor(cursor)
-              .patientSearchList;
+          PatientSearchList.fromCursor(cursor).patientSearchList;
       if (patients != null) {
         yield HomeInitial(query: event.query, patients: patients);
       }
