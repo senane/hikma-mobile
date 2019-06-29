@@ -145,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: double.infinity,
                   color: Colors.red,
                   child: Text(
-                    'Offline Mode',
+                    'Offline mode: Search results limited.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white),
                   ),
