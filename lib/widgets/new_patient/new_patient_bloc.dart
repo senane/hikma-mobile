@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
 
-import '../../constants.dart';
 import 'new_patient.dart';
 
 class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
@@ -23,11 +21,7 @@ class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
       NewPatientEvent event) async* {
     if (event is SaveButtonClicked) {
       yield NewPatientLoading();
-      var data = json.encode(event.data).replaceAll('"null"', 'null');
-      int patientLocalId = await userRepository.dbHelper
-          .insertToPatients(event.data);
-      await userRepository.dbHelper
-          .insertToJobQueue(patientLocalId, JOB_CREATE_PATIENT, data);
+      userRepository.createPatientFromForm(event.data);
       yield NewPatientRegistered();
     }
   }

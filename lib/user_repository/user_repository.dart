@@ -92,12 +92,24 @@ class UserRepository {
     return await dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
   }
 
-  Future<PatientPersonalInfo> getLocalPatientInfo(int localId, String uuid) async {
+  Future<PatientPersonalInfo> getLocalPatientInfo(
+      int localId, String uuid) async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       localId = await insertOrUpdatePatientByUuid(uuid);
     }
     Map<String, dynamic> row = await dbHelper.getPatientByLocalId(localId);
     return PatientPersonalInfo.fromRow(row);
+  }
+
+  createPatientFromForm(Map data) async {
+    int patientLocalId = await dbHelper.insertToPatients(data);
+    var jsonData = json.encode(data).replaceAll('"null"', 'null');
+    await dbHelper
+        .insertToJobQueue(patientLocalId, JOB_CREATE_PATIENT, jsonData);
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      executeJobs();
+    }
   }
 }
