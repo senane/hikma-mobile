@@ -136,7 +136,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
   @override
   void dispose() {
-    print('disposing');
     _fieldNodes.forEach((_, v) => v.dispose());
 //    _fieldControllers.forEach((_, v) => v.dispose());
     super.dispose();
@@ -324,7 +323,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
   }
 
   Map _parseData() {
-    print('parsing');
     final NameData nameData = NameData(
         givenName: _fieldControllers['firstName'].text,
         middleName: _fieldControllers['middleName'].text,
@@ -393,7 +391,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
       patient: patient.toMap(),
       relationships: [],
     );
-    print('parsed');
     return data.toMap();
   }
 }

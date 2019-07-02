@@ -11,21 +11,34 @@ import 'package:intl/intl.dart';
 
 import 'edit_patient.dart';
 
-class PatientRegistrationPage extends StatefulWidget {
-  final UserRepository userRepository;
+class EditPatientPage extends StatefulWidget {
 
-  PatientRegistrationPage({Key key, @required this.userRepository})
+  final UserRepository userRepository;
+  final int localId;
+  final String uuid;
+
+  EditPatientPage({
+    Key key,
+    @required this.userRepository,
+    @required this.localId,
+    @required this.uuid,
+  })
       : assert(userRepository != null),
+//        assert(localId != null),
+        assert(uuid != null),
         super(key: key);
 
   @override
-  _PatientRegistrationPageState createState() => _PatientRegistrationPageState();
+  _EditPatientPageState createState() => _EditPatientPageState();
 }
 
-class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
+class _EditPatientPageState extends State<EditPatientPage> {
 
   final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
-
+  int get _localId => widget.localId;
+  String get _uuid => widget.uuid;
+  UserRepository get _userRepository => widget.userRepository;
+  EditPatientBloc _editPatientBloc;
   String _gender;
   DateTime _birthDate;
 //  TimeOfDay _birthTime;
@@ -59,8 +72,11 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     'state': FocusNode(),
   };
 
-  UserRepository get _userRepository => widget.userRepository;
-  EditPatientBloc _editPatientBloc;
+  final Map _genders = {
+    'M': 'Male',
+    'F': 'Female',
+    'O': 'Other',
+  };
 
   @override
   void initState() {
@@ -80,6 +96,12 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
       child: BlocBuilder(
         bloc: _editPatientBloc,
         builder: (context, state) {
+          if (state is EditPatientLoading) {
+            _editPatientBloc.dispatch(
+              EditPatientStarted(localId: _localId, uuid: _uuid),
+            );
+            return Center(child: CircularProgressIndicator());
+          }
           return Scaffold(
             appBar: AppBar(
               title: Text('Edit Patient'),
@@ -93,8 +115,8 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                     autovalidate: false,
                     child: Column(
                       children: <Widget>[
-                        _buildPersonalInfoFields(),
-                        _buildAddressInfoFields(),
+                        _buildPersonalInfoFields(state),
+                        _buildAddressInfoFields(state),
                       ],
                     ),
                   ),
@@ -136,17 +158,17 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
   @override
   void dispose() {
-    print('disposing');
     _fieldNodes.forEach((_, v) => v.dispose());
 //    _fieldControllers.forEach((_, v) => v.dispose());
     super.dispose();
   }
 
-  Widget _buildPersonalInfoFields() {
+  Widget _buildPersonalInfoFields(state) {
     return Column(
       children: <Widget>[
         _buildFormBuilderTextField(
             'first_name',
+            state.patientData.firstName,
             'First Name',
             true,
             _fieldControllers['firstName'],
@@ -155,6 +177,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'middle_name',
+            state.patientData.middleName,
             'Middle Name',
             false,
             _fieldControllers['middleName'],
@@ -163,6 +186,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'last_name',
+            state.patientData.lastName,
             'Last Name',
             true,
             _fieldControllers['lastName'],
@@ -171,6 +195,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'local_first_name',
+            state.patientData.firstNameLocal,
             'Local First Name',
             false,
             _fieldControllers['firstNameLocal'],
@@ -179,6 +204,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'local_middle_name',
+            state.patientData.middleNameLocal,
             'Local Middle Name',
             false,
             _fieldControllers['middleNameLocal'],
@@ -187,6 +213,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'local_last_name',
+            state.patientData.lastNameLocal,
             'Local Last Name',
             false,
             _fieldControllers['lastNameLocal'],
@@ -212,6 +239,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
           onChanged: (dynamic value) async {
             _gender = value.substring(0, 1);
           },
+          initialValue: _genders[state.patientData.gender],
         ),
         _padding(),
         FormBuilderDateTimePicker(
@@ -227,6 +255,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
           onChanged: (dynamic value) async {
             _birthDate = value;
           },
+          initialValue: DateTime.parse(state.patientData.birthDate),
         ),
         _padding(),
 //        FormBuilderDateTimePicker(
@@ -243,11 +272,12 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     );
   }
 
-  Widget _buildAddressInfoFields() {
+  Widget _buildAddressInfoFields(state) {
     return Column(
       children: <Widget>[
         _buildFormBuilderTextField(
             'address',
+            state.patientData.address,
             'Address',
             false,
             _fieldControllers['address'],
@@ -256,6 +286,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'city_village',
+            state.patientData.cityVillage,
             'City/Village',
             true,
             _fieldControllers['city'],
@@ -264,6 +295,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'district',
+            state.patientData.district,
             'District',
             false,
             _fieldControllers['district'],
@@ -272,6 +304,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             TextInputAction.next),
         _buildFormBuilderTextField(
             'state_province',
+            state.patientData.state,
             'State/Province',
             false,
             _fieldControllers['state'],
@@ -286,13 +319,18 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     return Padding(padding: EdgeInsets.symmetric(vertical: 8));
   }
 
-  Widget _buildFormBuilderTextField(String attribute, String label, bool required,
+  Widget _buildFormBuilderTextField(String attribute, String init, String label, bool required,
       TextEditingController controller, FocusNode node,
       FocusNode nextNode, TextInputAction action) {
+    if (init == null) {
+      init = '';
+    }
+    controller.value = TextEditingValue(text: init);
     return Column (
       children: <Widget>[
         FormBuilderTextField(
           attribute: attribute,
+          initialValue: init,
           controller: controller,
           decoration: InputDecoration(
             labelText: label,
@@ -324,7 +362,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
   }
 
   Map _parseData() {
-    print('parsing');
     final NameData nameData = NameData(
         givenName: _fieldControllers['firstName'].text,
         middleName: _fieldControllers['middleName'].text,
@@ -393,7 +430,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
       patient: patient.toMap(),
       relationships: [],
     );
-    print('parsed');
     return data.toMap();
   }
 }

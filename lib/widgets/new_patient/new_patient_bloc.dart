@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
