@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/charts/simple_line.dart';
-
+import '../../colors.dart';
 import 'patient_details.dart';
 import 'patient_details_state.dart';
 
@@ -84,10 +84,26 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                     ],
                   ),
                   Padding(padding: EdgeInsets.symmetric(vertical: 16)),
-                  _buildDataBit(
-                    'Local Name',
-                    '${state.patientData.firstNameLocal} '
-                        '${state.patientData.lastNameLocal}',
+                  Row(
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        color: hikmaPrimary,
+                        tooltip: 'Edit',
+                        onPressed: () async {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                              }
+                          );
+                        },
+                      ),
+                      _buildDataBit(
+                        'Local Name',
+                        '${state.patientData.firstNameLocal} '
+                            '${state.patientData.lastNameLocal}',
+                      ),
+                    ],
                   ),
                   Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                   _buildDataBit('Patient ID', state.patientData.patientId),

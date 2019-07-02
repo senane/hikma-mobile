@@ -9,7 +9,7 @@ import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 
-import 'new_patient.dart';
+import 'edit_patient.dart';
 
 class PatientRegistrationPage extends StatefulWidget {
   final UserRepository userRepository;
@@ -60,29 +60,29 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
   };
 
   UserRepository get _userRepository => widget.userRepository;
-  NewPatientBloc _newPatientBloc;
+  EditPatientBloc _editPatientBloc;
 
   @override
   void initState() {
-    _newPatientBloc = NewPatientBloc(userRepository: _userRepository);
+    _editPatientBloc = EditPatientBloc(userRepository: _userRepository);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener(
-      bloc: _newPatientBloc,
+      bloc: _editPatientBloc,
       listener: (context, state) {
-        if (state is NewPatientRegistered) {
+        if (state is EditPatientRegistered) {
           Navigator.pop(context);
         }
       },
       child: BlocBuilder(
-        bloc: _newPatientBloc,
+        bloc: _editPatientBloc,
         builder: (context, state) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('New Patient'),
+              title: Text('Edit Patient'),
             ),
             body: SafeArea(
               child: ListView(
@@ -106,7 +106,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                           Navigator.pop(context);
                         },
                       ),
-                      state is NewPatientLoading
+                      state is EditPatientLoading
                           ? CircularProgressIndicator()
                           : RaisedButton(
                         child: Text('SAVE'),
@@ -118,7 +118,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                         onPressed: () async {
                           if (_validateData()) {
                             Map data = _parseData();
-                            _newPatientBloc
+                            _editPatientBloc
                                 .dispatch(SaveButtonClicked(data: data));
                           }
                         },
