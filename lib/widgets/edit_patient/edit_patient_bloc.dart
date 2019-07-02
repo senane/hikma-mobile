@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 import 'edit_patient.dart';
 
 class EditPatientBloc extends Bloc<EditPatientEvent, EditPatientState> {
-  final UserRepository userRepoitory;
+  final UserRepository userRepository;
   final EditPatientLoading _emptyState = EditPatientLoading();
 
   EditPatientBloc({
