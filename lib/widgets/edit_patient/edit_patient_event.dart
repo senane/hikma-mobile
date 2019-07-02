@@ -9,10 +9,21 @@ class SaveButtonClicked extends EditPatientEvent {
   final Map data;
   SaveButtonClicked({@required this.data}) : super ([data]);
   @override
-  String toString() => 'PatientDetailsStarted';
+  String toString() => 'SaveButtonClicked';
 }
 
 class CancelButtonClicked extends EditPatientEvent {
   @override
-  String toString() => 'PatientDetailsStarted';
+  String toString() => 'CancelButtonClicked';
+}
+
+class EditPatientStarted extends EditPatientEvent {
+  final int localId;
+  final String uuid;
+  EditPatientStarted({
+    @required this.localId,
+    @required this.uuid,
+  }) : super ([localId]);
+  @override
+  String toString() => 'EditPatientStarted';
 }

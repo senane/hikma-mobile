@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/charts/simple_line.dart';
+import 'package:hikma_health/widgets/edit_patient/edit_patient_page.dart';
 import '../../colors.dart';
 import 'patient_details.dart';
 import 'patient_details_state.dart';
@@ -19,6 +20,7 @@ class PatientDetailsScreen extends StatefulWidget {
     @required this.userRepository
   })
       : assert(uuid != null),
+//        assert(localId != null),
         assert(userRepository != null),
         super(key: key);
 
@@ -72,38 +74,43 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         backgroundColor: Colors.transparent,
                       ),
                       Padding(padding: EdgeInsets.symmetric(vertical: 8)),
-                      Text(
-                        '${state.patientData.firstName} '
-                            '${state.patientData.lastName}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'sans-serif-condensed',
-                          fontSize: 18,
-                        ),
+                      Row(
+                        children: <Widget>[
+                          Text(
+                            '${state.patientData.firstName} '
+                                '${state.patientData.lastName}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'sans-serif-condensed',
+                              fontSize: 18,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            color: hikmaPrimary,
+                            tooltip: 'Edit',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditPatientPage(
+                                    uuid: _uuid,
+                                    localId: _localId,
+                                    userRepository: _userRepository,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   Padding(padding: EdgeInsets.symmetric(vertical: 16)),
-                  Row(
-                    children: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        color: hikmaPrimary,
-                        tooltip: 'Edit',
-                        onPressed: () async {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                              }
-                          );
-                        },
-                      ),
-                      _buildDataBit(
-                        'Local Name',
-                        '${state.patientData.firstNameLocal} '
-                            '${state.patientData.lastNameLocal}',
-                      ),
-                    ],
+                  _buildDataBit(
+                    'Local Name',
+                    '${state.patientData.firstNameLocal} '
+                        '${state.patientData.lastNameLocal}',
                   ),
                   Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                   _buildDataBit('Patient ID', state.patientData.patientId),

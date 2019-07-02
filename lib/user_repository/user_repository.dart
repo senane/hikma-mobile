@@ -85,6 +85,7 @@ class UserRepository {
   }
 
   Future<int> insertOrUpdatePatientByUuid(String uuid) async {
+    executeJobs();
     PatientPersonalInfo info = await getPatient(
         auth: await readAuth(),
         uuid: uuid
