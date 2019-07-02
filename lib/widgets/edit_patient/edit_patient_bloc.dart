@@ -1,14 +1,12 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
-
 import 'edit_patient.dart';
 
 class EditPatientBloc extends Bloc<EditPatientEvent, EditPatientState> {
-  final UserRepository userRepository;
+  final UserRepository userRepoitory;
   final EditPatientLoading _emptyState = EditPatientLoading();
 
   EditPatientBloc({
