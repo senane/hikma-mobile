@@ -39,22 +39,28 @@ class _EditPatientPageState extends State<EditPatientPage> {
   String get _uuid => widget.uuid;
   UserRepository get _userRepository => widget.userRepository;
   EditPatientBloc _editPatientBloc;
-  String _gender;
-  DateTime _birthDate;
-//  TimeOfDay _birthTime;
 
-  final _fieldControllers = {
-    'firstName': TextEditingController(),
-    'middleName': TextEditingController(),
-    'lastName': TextEditingController(),
-    'firstNameLocal': TextEditingController(),
-    'middleNameLocal': TextEditingController(),
-    'lastNameLocal': TextEditingController(),
-    'address': TextEditingController(),
-    'city': TextEditingController(),
-    'district': TextEditingController(),
-    'state': TextEditingController(),
-  };
+  Map<String, TextEditingController> _fieldControllers;
+
+  Map<String, TextEditingController> _initFieldControllers (state) {
+    return {
+      'firstName': TextEditingController(text: state.patientData.firstName),
+      'middleName': TextEditingController(text: state.patientData.middleName),
+      'lastName': TextEditingController(text: state.patientData.lastName),
+      'firstNameLocal': TextEditingController(
+          text: state.patientData.firstNameLocal),
+      'middleNameLocal': TextEditingController(
+          text: state.patientData.middleNameLocal),
+      'lastNameLocal': TextEditingController(
+          text: state.patientData.lastNameLocal),
+      'gender': TextEditingController(text: state.patientData.gender),
+      'birthDate': TextEditingController(text: state.patientData.birthDate),
+      'address': TextEditingController(text: state.patientData.address),
+      'city': TextEditingController(text: state.patientData.cityVillage),
+      'district': TextEditingController(text: state.patientData.district),
+      'state': TextEditingController(text: state.patientData.state),
+    };
+  }
 
   final _fieldNodes = {
     'firstName': FocusNode(),
@@ -70,6 +76,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
     'city': FocusNode(),
     'district': FocusNode(),
     'state': FocusNode(),
+    'birthDate': FocusNode(),
   };
 
   final Map _genders = {
@@ -89,7 +96,9 @@ class _EditPatientPageState extends State<EditPatientPage> {
     return BlocListener(
       bloc: _editPatientBloc,
       listener: (context, state) {
-        if (state is EditPatientRegistered) {
+        if (state is EditPatientInitial) {
+          _fieldControllers = _initFieldControllers(state);
+        } else if (state is EditPatientEdited) {
           Navigator.pop(context);
         }
       },
@@ -101,7 +110,12 @@ class _EditPatientPageState extends State<EditPatientPage> {
               EditPatientStarted(localId: _localId, uuid: _uuid),
             );
             return Center(child: CircularProgressIndicator());
+          } else if (state is EditPatientEdited) {
+            return Center(child: CircularProgressIndicator());
           }
+
+          print(_fieldControllers['firstName'].text);
+
           return Scaffold(
             appBar: AppBar(
               title: Text('Edit Patient'),
@@ -115,8 +129,8 @@ class _EditPatientPageState extends State<EditPatientPage> {
                     autovalidate: false,
                     child: Column(
                       children: <Widget>[
-                        _buildPersonalInfoFields(state),
-                        _buildAddressInfoFields(state),
+                        _buildPersonalInfoFields(state, _fieldControllers),
+                        _buildAddressInfoFields(state, _fieldControllers),
                       ],
                     ),
                   ),
@@ -139,9 +153,14 @@ class _EditPatientPageState extends State<EditPatientPage> {
                         textColor: Colors.white,
                         onPressed: () async {
                           if (_validateData()) {
-                            Map data = _parseData();
+                            Map data = _parseData(_fieldControllers);
                             _editPatientBloc
-                                .dispatch(SaveButtonClicked(data: data));
+                                .dispatch(
+                                SaveButtonClicked(
+                                    data: data,
+                                    uuid: state.patientData.uuid
+                                )
+                            );
                           }
                         },
                       )
@@ -163,7 +182,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
     super.dispose();
   }
 
-  Widget _buildPersonalInfoFields(state) {
+  Widget _buildPersonalInfoFields(state, _fieldControllers) {
     return Column(
       children: <Widget>[
         _buildFormBuilderTextField(
@@ -218,8 +237,23 @@ class _EditPatientPageState extends State<EditPatientPage> {
             false,
             _fieldControllers['lastNameLocal'],
             _fieldNodes['lastNameLocal'],
-            null,
+            _fieldNodes['birthDate'],
             TextInputAction.next),
+        FormBuilderDateTimePicker(
+          attribute: 'birth_date',
+          inputType: InputType.date,
+          format: DateFormat('yyyy-MM-dd'),
+          decoration: InputDecoration(labelText: 'Birth date (YYYY-MM-DD)'),
+          controller: _fieldControllers['birthDate'],
+          validators: [
+            FormBuilderValidators.required(
+                errorText: 'This field cannot be empty'
+            ),
+          ],
+          focusNode: _fieldNodes['birthDate'],
+          initialValue: DateTime.parse(_fieldControllers['birthDate'].text),
+        ),
+        _padding(),
         FormBuilderRadio(
           decoration: InputDecoration(labelText: 'Gender'),
           leadingInput: true,
@@ -237,42 +271,18 @@ class _EditPatientPageState extends State<EditPatientPage> {
               .map((gender) => FormBuilderFieldOption(value: gender))
               .toList(growable: false),
           onChanged: (dynamic value) async {
-            _gender = value.substring(0, 1);
+            _fieldControllers['gender'] = TextEditingController(
+                text: value.substring(0, 1)
+            );
           },
-          initialValue: _genders[state.patientData.gender],
+          initialValue: _genders[_fieldControllers['gender'].text],
         ),
         _padding(),
-        FormBuilderDateTimePicker(
-          attribute: 'birth_date',
-          inputType: InputType.date,
-          format: DateFormat('yyyy-MM-dd'),
-          decoration: InputDecoration(labelText: 'Birth date (YYYY-MM-DD)'),
-          validators: [
-            FormBuilderValidators.required(
-                errorText: 'This field cannot be empty'
-            ),
-          ],
-          onChanged: (dynamic value) async {
-            _birthDate = value;
-          },
-          initialValue: DateTime.parse(state.patientData.birthDate),
-        ),
-        _padding(),
-//        FormBuilderDateTimePicker(
-//          attribute: 'birth_time',
-//          inputType: InputType.time,
-//          format: DateFormat('HH:MM'),
-//          decoration: InputDecoration(labelText: 'Birth time'),
-//          onChanged: (dynamic value) async {
-//            _birthTime = value;
-//          },
-//        ),
-//        _padding(),
       ],
     );
   }
 
-  Widget _buildAddressInfoFields(state) {
+  Widget _buildAddressInfoFields(state, _fieldControllers) {
     return Column(
       children: <Widget>[
         _buildFormBuilderTextField(
@@ -319,18 +329,15 @@ class _EditPatientPageState extends State<EditPatientPage> {
     return Padding(padding: EdgeInsets.symmetric(vertical: 8));
   }
 
-  Widget _buildFormBuilderTextField(String attribute, String init, String label, bool required,
+  Widget _buildFormBuilderTextField(String attribute, String init, String label,
+      bool required,
       TextEditingController controller, FocusNode node,
       FocusNode nextNode, TextInputAction action) {
-    if (init == null) {
-      init = '';
-    }
-    controller.value = TextEditingValue(text: init);
     return Column (
       children: <Widget>[
         FormBuilderTextField(
           attribute: attribute,
-          initialValue: init,
+//          initialValue: controller.text,
           controller: controller,
           decoration: InputDecoration(
             labelText: label,
@@ -343,6 +350,9 @@ class _EditPatientPageState extends State<EditPatientPage> {
             },
           ],
           focusNode: node,
+//          onChanged: (dynamic value) async {
+//            controller = TextEditingController(text: value);
+//          },
           textInputAction: action,
           onFieldSubmitted: (value) {
             node.unfocus();
@@ -358,10 +368,10 @@ class _EditPatientPageState extends State<EditPatientPage> {
   }
 
   bool _validateData() {
-    return _fbKey.currentState.validate() && _birthDate != null;
+    return _fbKey.currentState.validate();
   }
 
-  Map _parseData() {
+  Map _parseData(_fieldControllers) {
     final NameData nameData = NameData(
         givenName: _fieldControllers['firstName'].text,
         middleName: _fieldControllers['middleName'].text,
@@ -415,8 +425,8 @@ class _EditPatientPageState extends State<EditPatientPage> {
           middleLocalNameAttr.toMap(),
           lastLocalNameAttr.toMap()
         ],
-        gender: _gender,
-        birthDate: '${_birthDate.toIso8601String().substring(0, 23)}+0100',
+        gender: _fieldControllers['gender'].text,
+        birthDate: _fieldControllers['birthDate'].text,
         birthDateEstimated: true,
         causeOfDeath: ''
     );

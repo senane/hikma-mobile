@@ -116,5 +116,27 @@ Future<PatientIds> createPatient({@required auth, @required Map body}) async {
   return PatientIds.fromJson(responseJson);
 }
 
+updatePatient({
+  @required auth,
+  @required Map body,
+  @required String uuid}) async {
+  var data = json.encode(body).replaceAll('"null"', 'null');
+  var response = await http
+      .post('$API_BASE/bahmnicore/patientprofile/$uuid?v=full', body: data,
+      headers: {'authorization': auth, 'content-type': 'application/json'})
+      .timeout(Duration(seconds: 30));
+
+  if (response == null) {
+    print('network_calls.dart: Status: ${response.statusCode},'
+        ' Make sure you\'re connected');
+    throw ('Status: ${response.statusCode}, Make sure you\'re connected');
+  }
+  if (response.statusCode == 401) {
+    return null;
+  }
+  final responseJson = json.decode(response.body);
+  print(responseJson);
+}
+
 String createBasicAuth(String username, String password) =>
     'Basic ' + base64Encode(utf8.encode('$username:$password'));

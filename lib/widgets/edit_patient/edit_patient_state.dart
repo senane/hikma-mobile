@@ -23,7 +23,7 @@ class EditPatientLoading extends EditPatientState {
   String toString() => 'EditPatientLoading';
 }
 
-class EditPatientRegistered extends EditPatientState {
+class EditPatientEdited extends EditPatientState {
   @override
-  String toString() => 'EditPatientRegistered';
+  String toString() => 'EditPatientEdited';
 }
