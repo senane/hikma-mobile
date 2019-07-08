@@ -37,7 +37,7 @@ main() {
   test("Get Patient Data", () async {
     PatientPersonalInfo patient = await getPatient(
         auth: authentication,
-        uuid: '9bcbbe57-a551-4d2d-a50d-0ca17a0dea25'
+        uuid: 'c81a13bd-a669-40ca-ae29-e8d46ece1f16'
     );
     print('${patient.firstNameLocal} ${patient.lastNameLocal}');
   });
