@@ -48,9 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen(
                 (ConnectivityResult result) async {
-          _homeBloc.dispatch(ClearButtonPressed());
           setState(() {
             _online = result != ConnectivityResult.none;
+            _searchPatient(
+                'bb0e512e-d225-11e4-9c67-080027b662ec',
+                _searchController.text,
+                context
+            );
             if (_online) {
               showDialog(
                   context: context,
@@ -113,7 +117,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icon(Icons.sync),
                       tooltip: 'Sync',
                       onPressed: () async {
-                        _homeBloc.dispatch(ClearButtonPressed());
+                        _searchPatient(
+                            'bb0e512e-d225-11e4-9c67-080027b662ec',
+                            _searchController.text,
+                            context
+                        );
                         setState(() {
                           if (_online) {
                             showDialog(
@@ -246,7 +254,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     userRepository: _userRepository,
                   ),
                 ),
-              );
+              ).then((value) {
+                _searchPatient(
+                    'bb0e512e-d225-11e4-9c67-080027b662ec',
+                    _searchController.text,
+                    context
+                );
+              });
             },
           );
         },
