@@ -74,35 +74,40 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         backgroundColor: Colors.transparent,
                       ),
                       Padding(padding: EdgeInsets.symmetric(vertical: 8)),
-                      Row(
-                        children: <Widget>[
-                          Text(
-                            '${state.patientData.firstName} '
-                                '${state.patientData.lastName}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'sans-serif-condensed',
-                              fontSize: 18,
+                      Text(
+                        '${state.patientData.firstName} '
+                            '${state.patientData.lastName}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'sans-serif-condensed',
+                          fontSize: 18,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        color: hikmaPrimary,
+                        tooltip: 'Edit',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditPatientPage(
+                                uuid: _uuid,
+                                localId: _localId,
+                                userRepository: _userRepository,
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            color: hikmaPrimary,
-                            tooltip: 'Edit',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EditPatientPage(
-                                    uuid: _uuid,
+                          ).then((value) {
+                            print('reloading');
+                            _patientBloc.dispatch(
+                                PatientDetailsStarted(
                                     localId: _localId,
-                                    userRepository: _userRepository,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                                    uuid: _uuid
+                                )
+                            );
+                            print('reloaded');
+                          });
+                        },
                       ),
                     ],
                   ),
