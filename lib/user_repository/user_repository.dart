@@ -70,7 +70,6 @@ class UserRepository {
           if (patientIds != null) {
             await _dbHelper.updateLocalPatientIds(job['record_id'], patientIds);
             await _dbHelper.removeFromJobQueue(job['id']);
-
             String idString = job['id'].toString();
             print('removed job $idString');
           }
@@ -84,17 +83,6 @@ class UserRepository {
           String idString = job[columnId].toString();
           print('removed job $idString');
         }
-      } else if (job[columnJobId] == JOB_UPDATE_PATIENT) {
-        int localId = job[columnLocalId];
-        print(localId);
-        Map<String, dynamic> row = await dbHelper.getPatientByLocalId(localId);
-        String uuid = row[columnUuid];
-        Map dataMap = json.decode(job[columnData]);
-        await updatePatient(auth: auth, body: dataMap, uuid: uuid);
-        print(job);
-        await dbHelper.removeFromJobQueue(job[columnId]);
-        String idString = job[columnId].toString();
-        print('removed job $idString');
       }
     }
   }
@@ -110,8 +98,7 @@ class UserRepository {
     await executeJobs();
     PatientPersonalInfo info = await getPatient(
         auth: await readAuth(),
-        uuid: uuid
-    );
+        uuid: uuid);
     return await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
   }
 
@@ -130,10 +117,7 @@ class UserRepository {
     String jsonData = json.encode(data).replaceAll('"null"', 'null');
     await _dbHelper
         .insertToJobQueue(patientLocalId, JOB_CREATE_PATIENT, jsonData);
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
-      await executeJobs();
-    }
+    await executeJobs();
   }
 
   editPatient(Map data, int localId) async {
