@@ -7,7 +7,10 @@ abstract class PatientDetailsEvent extends Equatable {
 
 class PatientDetailsStarted extends PatientDetailsEvent {
   final String uuid;
-  PatientDetailsStarted({@required this.uuid}) : super ([uuid]);
+  final int localId;
+  PatientDetailsStarted(
+      {@required this.localId, @required this.uuid}
+      ) : super ([uuid]);
   @override
   String toString() => 'PatientDetailsStarted';
 }

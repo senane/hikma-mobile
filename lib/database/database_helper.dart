@@ -4,40 +4,9 @@ import 'package:flutter_android/android_content.dart' show Context;
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/model/patient.dart';
 
+import '../constants.dart';
+
 class DatabaseHelper {
-
-  static final tableJobQueue = 'job_queue';
-  static final columnId = 'id';
-  static final columnRecordId = 'record_id';
-  static final columnJobId = 'job_id';
-  static final columnData = 'data';
-
-  static final tablePatients = 'patients';
-
-  static final columnGivenName = 'first_name';
-  static final columnMiddleName = 'middle_name';
-  static final columnFamilyName = 'family_name';
-  static final columnNamePreferred = 'name_preferred';
-
-  static final columnAddress1 = 'address1';
-  static final columnAddress2 = 'address2';
-  static final columnAddress3 = 'address3';
-  static final columnCityVillage = 'city_village';
-  static final columnCountyDistrict = 'county_district';
-  static final columnStateProvince = 'state_province';
-
-  static final columnUuid = 'uuid';
-  static final columnPID = 'pid';
-  static final columnNID = 'nid';
-
-  static final columnFirstNameLocal = 'first_name_local';
-  static final columnMiddleNameLocal = 'middle_name_local';
-  static final columnLastNameLocal = 'last_name_local';
-
-  static final columnGender = 'gender';
-  static final columnBirthDate = 'birth_date';
-  static final columnBirthDateEstimated = 'birth_date_estimated';
-  static final columnCauseOfDeath = 'cause_of_death';
 
   DatabaseHelper._internal();
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -78,7 +47,6 @@ class DatabaseHelper {
         $columnGivenName TEXT,
         $columnMiddleName TEXT,
         $columnFamilyName TEXT,
-        $columnNamePreferred BOOLEAN,
         
         $columnAddress1 TEXT,
         $columnAddress2 TEXT,
@@ -96,9 +64,7 @@ class DatabaseHelper {
         $columnLastNameLocal TEXT,
         
         $columnGender TEXT,
-        $columnBirthDate DATETIME,
-        $columnBirthDateEstimated BOOLEAN,
-        $columnCauseOfDeath TEXT
+        $columnBirthDate DATETIME
       )
     """);
   }
@@ -138,7 +104,7 @@ class DatabaseHelper {
   }
 
   /// Patients Methods
-  Future<int> insertToPatients(Map data) async {
+  Future<int> insertToPatients(Map data) {
     return _database.insert(
       table: tablePatients,
       values: <String, dynamic> {
@@ -146,7 +112,10 @@ class DatabaseHelper {
         columnGivenName: data['patient']['person']['names'][0]['givenName'],
         columnMiddleName: data['patient']['person']['names'][0]['middleName'],
         columnFamilyName: data['patient']['person']['names'][0]['familyName'],
-        columnNamePreferred: false,
+
+        columnUuid: 'Unassigned',
+        columnPID: 'Unassigned',
+        columnNID: 'Unassigned',
 
         columnAddress1: data['patient']['person']['addresses'][0]['address1'],
         columnCityVillage:
@@ -163,15 +132,61 @@ class DatabaseHelper {
         columnLastNameLocal:
           data['patient']['person']['attributes'][2]['value'],
 
-        columnGender: data['patient']['gender'],
-        columnBirthDate: data['patient']['birthdate'],
-        columnBirthDateEstimated: data['patient']['birthdateEstimated'],
-        columnCauseOfDeath: data['patient']['causeOfDeath'],
+        columnGender: data['patient']['person']['gender'],
+        columnBirthDate: data['patient']['person']['birthdate'],
       },
     );
   }
 
-  updatePatientIds(int localId, PatientIds patientIds) async {
+  Future<int> insertOrUpdatePatientFromPersonalInfo(PatientPersonalInfo info) async {
+    bool exists = await patientExists(info.uuid);
+    if (!exists) {
+      await _database.insert(
+          table: tablePatients,
+          values: <String, dynamic>{
+            columnUuid: info.uuid,
+          }
+      );
+    }
+    await _database.update(
+        table: tablePatients,
+        values: <String, dynamic>{
+          columnGivenName: info.firstName,
+          columnFamilyName: info.lastName,
+          columnPID: info.patientId,
+
+          columnGivenName: info.firstName,
+          columnMiddleName: info.middleName,
+          columnFamilyName: info.lastName,
+
+          columnAddress1: info.address,
+          columnCityVillage: info.cityVillage,
+          columnStateProvince: info.state,
+
+          columnFirstNameLocal: info.firstNameLocal,
+          columnMiddleNameLocal: info.middleNameLocal,
+          columnLastNameLocal: info.lastNameLocal,
+
+          columnGender: info.gender,
+          columnBirthDate: info.birthDate,
+        },
+        where: '$columnUuid = ?',
+        whereArgs: <String>[info.uuid]
+    );
+    Map<String, dynamic> patient = await getPatientByUuid(info.uuid);
+    return patient[columnId];
+  }
+
+  Future<bool> patientExists(String uuid) async {
+    SQLiteCursor localVersions = await _database.query(
+      table: tablePatients,
+      where: '$columnUuid = ?',
+      whereArgs: [uuid],
+    );
+    return (localVersions.getCount() > 0);
+  }
+
+  updateLocalPatientIds(int localId, PatientIds patientIds) async {
     Map ids = patientIds.toMap();
     await _database.update(
       table: tablePatients,
@@ -185,11 +200,36 @@ class DatabaseHelper {
     );
   }
 
-  Future<SQLiteCursor> getPatientByLocalId(int localId) async {
-    String id = localId.toString();
-    return _database.query(
+  Future<SQLiteCursor> queryLocalPatients() {
+    return _database.rawQuery('SELECT * FROM $tablePatients');
+  }
+
+  Future<Map<String, dynamic>> getPatientByUuid(String uuid) async {
+    SQLiteCursor patients = await _database.query(
+      table: tablePatients,
+      where: '$columnUuid = ?',
+      whereArgs: <String>[uuid]
+    );
+    return patients.first;
+  }
+
+  Future<Map<String, dynamic>> getPatientByLocalId(int localId) async {
+    SQLiteCursor patients = await _database.query(
         table: tablePatients,
-        where: '$columnId = $id',
+        where: '$columnId = ?',
+        whereArgs: <String>[localId.toString()]
+    );
+    return patients.first;
+  }
+
+  Future<SQLiteCursor> searchPatients(String query) async {
+    return _database.rawQuery(
+        "SELECT * FROM $tablePatients "
+            "WHERE ($columnGivenName LIKE '%$query%' "
+            "OR $columnMiddleName LIKE '%$query%' "
+            "OR $columnFamilyName LIKE '%$query%' "
+            "OR $columnPID LIKE '%$query%') "
+            "AND $columnPID IS NOT NULL "
     );
   }
 }

@@ -1,12 +1,14 @@
 import 'dart:async';
-
+import 'dart:convert';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/database/database_helper.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
-import 'package:hikma_health/network/sync.dart';
 import 'package:meta/meta.dart';
+
+import '../constants.dart';
 
 class UserRepository {
 
@@ -55,28 +57,72 @@ class UserRepository {
     return _dbHelper.deleteDatabase();
   }
 
-  // Adds a job (ie. create patient) to the job queue in the local database
-  queueJob(int patientId, int jobId, String data) async {
-    await _dbHelper.insertToJobQueue(patientId, jobId, data);
-    return data;
-  }
-
-  // Adds a patient to the local database
-  addPatient(Map data) async {
-    return await _dbHelper.insertToPatients(data);
-  }
-
-  // Adds PID and NID info to a patient in the local database
-  updateCreatedPatient(int localId, PatientIds patientIds) async {
-    return await _dbHelper.updatePatientIds(localId, patientIds);
-  }
-
   // Executes the job queue
-  sync() async {
-    var jobs = await _dbHelper.queryJobs();
+  executeJobs() async {
+    SQLiteCursor jobs = await _dbHelper.queryJobs();
     String auth = await readAuth();
     for (var job in jobs) {
-      synchronise(auth, job, _dbHelper);
+      if (job['job_id'] == JOB_CREATE_PATIENT) {
+        Map dataMap = json.decode(job['data']);
+        PatientIds patientIds = await createPatient(auth: auth, body: dataMap);
+        print(job);
+        if (patientIds != null) {
+          await _dbHelper.updateLocalPatientIds(job['record_id'], patientIds);
+          await _dbHelper.removeFromJobQueue(job['id']);
+
+          String idString = job['id'].toString();
+          print('removed job $idString');
+        }
+      }
     }
+  }
+
+  updateAllPatients() async {
+    SQLiteCursor patients = await _dbHelper.queryLocalPatients();
+    for (var patient in patients) {
+      insertOrUpdatePatientByUuid(patient['uuid']);
+    }
+  }
+
+  Future<int> insertOrUpdatePatientByUuid(String uuid) async {
+    PatientPersonalInfo info = await getPatient(
+        auth: await readAuth(),
+        uuid: uuid
+    );
+    return await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
+  }
+
+  Future<PatientPersonalInfo> getLocalPatientInfo(
+      int localId, String uuid) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      localId = await insertOrUpdatePatientByUuid(uuid);
+    }
+    Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(localId);
+    return PatientPersonalInfo.fromRow(row);
+  }
+
+  createPatientFromForm(Map data) async {
+    int patientLocalId = await _dbHelper.insertToPatients(data);
+    var jsonData = json.encode(data).replaceAll('"null"', 'null');
+    await _dbHelper
+        .insertToJobQueue(patientLocalId, JOB_CREATE_PATIENT, jsonData);
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      executeJobs();
+    }
+  }
+
+  Future<List<PatientSearchResult>> searchPatients(String query, String locationUuid) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      String auth = await readAuth();
+      return await queryPatient(
+          auth: auth,
+          locationUuid: locationUuid,
+          query: query);
+    }
+    SQLiteCursor cursor = await _dbHelper.searchPatients(query);
+    return PatientSearchList.fromCursor(cursor).patientSearchList;
   }
 }

@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/model/patient.dart';
-import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
@@ -25,24 +23,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   @override
   Stream<HomeState> mapEventToState(HomeEvent event) async* {
-
     if (event is SearchButtonPressed) {
       yield HomeLoading();
       try {
-        String auth = await userRepository.readAuth();
         List<PatientSearchResult> patients =
-        await queryPatient(
-            auth: auth,
-            locationUuid: event.locationUuid,
-            query: event.query);
+            await userRepository.searchPatients(
+                event.query,
+                event.locationUuid);
         if (patients != null) {
           yield HomeInitial(query: event.query, patients: patients);
         }
         else {
           yield _emptyState;
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     } else if (event is ClearButtonPressed) {
       yield HomeLoading();
       yield _emptyState;

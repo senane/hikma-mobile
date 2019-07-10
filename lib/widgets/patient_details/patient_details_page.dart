@@ -10,10 +10,12 @@ import 'patient_details_state.dart';
 class PatientDetailsScreen extends StatefulWidget {
 
   final String uuid;
+  final int localId;
   final UserRepository userRepository;
   PatientDetailsScreen({
     Key key,
     @required this.uuid,
+    @required this.localId,
     @required this.userRepository
   })
       : assert(uuid != null),
@@ -28,7 +30,8 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   String _basicAuth;
   PatientDetailsBloc _patientBloc;
 
-  String  get _uuid => widget.uuid;
+  int get _localId => widget.localId;
+  String get _uuid => widget.uuid;
   UserRepository get _userRepository => widget.userRepository;
 
   @override
@@ -48,7 +51,9 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
           bloc: _patientBloc,
           builder: (BuildContext context, state) {
             if (state is PatientDetailsLoading) {
-              _patientBloc.dispatch(PatientDetailsStarted(uuid: _uuid));
+              _patientBloc.dispatch(
+                  PatientDetailsStarted(localId: _localId, uuid: _uuid),
+              );
               return Center(child: CircularProgressIndicator());
             }
             return Center(
