@@ -5,32 +5,18 @@ abstract class HomeEvent extends Equatable {
   HomeEvent([List props = const []]) : super(props);
 }
 
-class SearchButtonPressedOnline extends HomeEvent {
+class SearchButtonPressed extends HomeEvent {
   final String query;
   final String locationUuid;
 
-  SearchButtonPressedOnline({
+  SearchButtonPressed({
     @required this.query,
     @required this.locationUuid,
   }) : super([query, locationUuid]);
 
   @override
   String toString() =>
-      'SearchButtonPressedOnline { query: $query, locationUuid, $locationUuid }';
-}
-
-class SearchButtonPressedOffline extends HomeEvent {
-  final String query;
-  final String locationUuid;
-
-  SearchButtonPressedOffline({
-    @required this.query,
-    @required this.locationUuid,
-  }) : super([query, locationUuid]);
-
-  @override
-  String toString() =>
-      'SearchButtonPressedOffline { query: $query, locationUuid, $locationUuid }';
+      'SearchButtonPressed { query: $query, locationUuid, $locationUuid }';
 }
 
 class ClearButtonPressed extends HomeEvent {

@@ -260,18 +260,8 @@ class _HomeScreenState extends State<HomeScreen> {
       BuildContext context) async {
     if (_searchController.text.isNotEmpty) {
       _searchNode.unfocus();
-      if (_online) {
-        _homeBloc.dispatch(
-            SearchButtonPressedOnline(locationUuid: locationUuid, query: query)
-        );
-      } else {
-        _homeBloc.dispatch(
-            SearchButtonPressedOffline(
-                locationUuid: locationUuid,
-                query: query
-            )
-        );
-      }
+      _homeBloc.dispatch(
+          SearchButtonPressed(query: query, locationUuid: locationUuid));
     }
   }
 }

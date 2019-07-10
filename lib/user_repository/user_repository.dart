@@ -12,7 +12,7 @@ import '../constants.dart';
 
 class UserRepository {
 
-  final DatabaseHelper dbHelper = DatabaseHelper.instance;
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   Future<String> authenticate({
@@ -50,16 +50,16 @@ class UserRepository {
   }
 
   Future<SQLiteDatabase> initDatabase() async {
-    return dbHelper.database;
+    return _dbHelper.database;
   }
 
   Future<bool> deleteDatabase() async {
-    return dbHelper.deleteDatabase();
+    return _dbHelper.deleteDatabase();
   }
 
   // Executes the job queue
   executeJobs() async {
-    SQLiteCursor jobs = await dbHelper.queryJobs();
+    SQLiteCursor jobs = await _dbHelper.queryJobs();
     String auth = await readAuth();
     for (var job in jobs) {
       if (job['job_id'] == JOB_CREATE_PATIENT) {
@@ -67,8 +67,8 @@ class UserRepository {
         PatientIds patientIds = await createPatient(auth: auth, body: dataMap);
         print(job);
         if (patientIds != null) {
-          await dbHelper.updateLocalPatientIds(job['record_id'], patientIds);
-          await dbHelper.removeFromJobQueue(job['id']);
+          await _dbHelper.updateLocalPatientIds(job['record_id'], patientIds);
+          await _dbHelper.removeFromJobQueue(job['id']);
 
           String idString = job['id'].toString();
           print('removed job $idString');
@@ -78,7 +78,7 @@ class UserRepository {
   }
 
   updateAllPatients() async {
-    SQLiteCursor patients = await dbHelper.queryLocalPatients();
+    SQLiteCursor patients = await _dbHelper.queryLocalPatients();
     for (var patient in patients) {
       insertOrUpdatePatientByUuid(patient['uuid']);
     }
@@ -89,7 +89,7 @@ class UserRepository {
         auth: await readAuth(),
         uuid: uuid
     );
-    return await dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
+    return await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
   }
 
   Future<PatientPersonalInfo> getLocalPatientInfo(
@@ -98,18 +98,31 @@ class UserRepository {
     if (connectivityResult != ConnectivityResult.none) {
       localId = await insertOrUpdatePatientByUuid(uuid);
     }
-    Map<String, dynamic> row = await dbHelper.getPatientByLocalId(localId);
+    Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(localId);
     return PatientPersonalInfo.fromRow(row);
   }
 
   createPatientFromForm(Map data) async {
-    int patientLocalId = await dbHelper.insertToPatients(data);
+    int patientLocalId = await _dbHelper.insertToPatients(data);
     var jsonData = json.encode(data).replaceAll('"null"', 'null');
-    await dbHelper
+    await _dbHelper
         .insertToJobQueue(patientLocalId, JOB_CREATE_PATIENT, jsonData);
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       executeJobs();
     }
+  }
+
+  Future<List<PatientSearchResult>> searchPatients(String query, String locationUuid) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      String auth = await readAuth();
+      return await queryPatient(
+          auth: auth,
+          locationUuid: locationUuid,
+          query: query);
+    }
+    SQLiteCursor cursor = await _dbHelper.searchPatients(query);
+    return PatientSearchList.fromCursor(cursor).patientSearchList;
   }
 }
