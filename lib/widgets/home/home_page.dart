@@ -244,13 +244,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             title: Text(patientsList[index].name),
             subtitle: Text(patientsList[index].id),
-            onTap: () {
+            onTap: () async {
+              int localId;
+              if (patientsList[index].localId == null) {
+                localId = await _userRepository
+                    .insertOrUpdatePatientByUuid(patientsList[index].uuid);
+              } else {
+                localId = patientsList[index].localId;
+              }
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PatientDetailsScreen(
                     uuid: patientsList[index].uuid,
-                    localId: patientsList[index].localId,
+                    localId: localId,
                     userRepository: _userRepository,
                   ),
                 ),

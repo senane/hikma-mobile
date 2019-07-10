@@ -20,7 +20,7 @@ class PatientDetailsScreen extends StatefulWidget {
     @required this.userRepository
   })
       : assert(uuid != null),
-//        assert(localId != null),
+        assert(localId != null),
         assert(userRepository != null),
         super(key: key);
 
@@ -88,6 +88,8 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         color: hikmaPrimary,
                         tooltip: 'Edit',
                         onPressed: () {
+                          print('bravo');
+                          print(_localId);
                           Navigator.push(
                             context,
                             MaterialPageRoute(

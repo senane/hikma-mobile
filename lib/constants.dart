@@ -7,10 +7,11 @@ const Map UUID_MAP = {
 };
 
 const JOB_CREATE_PATIENT = 0;
+const JOB_UPDATE_PATIENT = 1;
 
 const tableJobQueue = 'job_queue';
 const columnId = 'id';
-const columnRecordId = 'record_id';
+const columnLocalId = 'local_id';
 const columnJobId = 'job_id';
 const columnData = 'data';
 

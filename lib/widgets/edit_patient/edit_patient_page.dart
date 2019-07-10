@@ -24,7 +24,7 @@ class EditPatientPage extends StatefulWidget {
     @required this.uuid,
   })
       : assert(userRepository != null),
-//        assert(localId != null),
+        assert(localId != null),
         assert(uuid != null),
         super(key: key);
 
@@ -154,11 +154,15 @@ class _EditPatientPageState extends State<EditPatientPage> {
                         onPressed: () async {
                           if (_validateData()) {
                             Map data = _parseData(_fieldControllers);
+                            print('alpha');
+                            print(widget.localId);
+                            print(_localId);
                             _editPatientBloc
                                 .dispatch(
                                 SaveButtonClicked(
                                     data: data,
-                                    uuid: state.patientData.uuid
+                                    uuid: state.patientData.uuid,
+                                    localId: _localId,
                                 )
                             );
                           }
