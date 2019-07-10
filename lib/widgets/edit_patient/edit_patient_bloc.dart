@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
-import '../../constants.dart';
 import 'edit_patient.dart';
 
 class EditPatientBloc extends Bloc<EditPatientEvent, EditPatientState> {
@@ -24,22 +21,7 @@ class EditPatientBloc extends Bloc<EditPatientEvent, EditPatientState> {
       EditPatientEvent event) async* {
     if (event is SaveButtonClicked) {
       yield EditPatientLoading();
-
-      String body = json.encode(event.data).replaceAll('"null"', 'null');
-
-      print('adding job');
-      await userRepository.dbHelper.insertToJobQueue(
-          event.localId, JOB_UPDATE_PATIENT, body);
-
-      Map patient = await userRepository.dbHelper.editPatient(event.data, event.localId);
-      print(patient);
-
-      print('edited');
-      var connectivityResult = await (Connectivity().checkConnectivity());
-      if (connectivityResult != ConnectivityResult.none) {
-        userRepository.executeJobs();
-      }
-
+      userRepository.editPatient(event.data, event.localId);
       yield EditPatientEdited();
     } else if (event is EditPatientStarted) {
       PatientPersonalInfo patientData = await userRepository

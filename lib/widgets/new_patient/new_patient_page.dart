@@ -297,7 +297,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
             labelText: label,
           ),
           validators: [
-                (value) {
+            (value) {
               if (required && value.isEmpty) {
                 return 'This field cannot be empty';
               }
