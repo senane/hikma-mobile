@@ -36,7 +36,7 @@ class DatabaseHelper {
     await db.execSQL("""
       CREATE TABLE $tableJobQueue (
         $columnId INTEGER PRIMARY KEY,
-        $columnRecordId INTEGER, 
+        $columnLocalId INTEGER, 
         $columnJobId INTEGER,
         $columnData TEXT NOT NULL
       )
@@ -79,12 +79,12 @@ class DatabaseHelper {
   }
 
   /// Job Queue methods
-  Future<int> insertToJobQueue(int patientId, int jobId, String data) async {
+  Future<int> insertToJobQueue(int localId, int jobId, String data) async {
     return _database.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
-        columnRecordId: patientId,
+        columnLocalId: localId,
         columnJobId: jobId,
         columnData: data,
       },
@@ -119,18 +119,18 @@ class DatabaseHelper {
 
         columnAddress1: data['patient']['person']['addresses'][0]['address1'],
         columnCityVillage:
-          data['patient']['person']['addresses'][0]['cityVillage'],
+        data['patient']['person']['addresses'][0]['cityVillage'],
         columnCountyDistrict:
-          data['patient']['person']['addresses'][0]['countyDistrict'],
+        data['patient']['person']['addresses'][0]['countyDistrict'],
         columnStateProvince:
-          data['patient']['person']['addresses'][0]['stateProvince'],
+        data['patient']['person']['addresses'][0]['stateProvince'],
 
         columnFirstNameLocal:
-          data['patient']['person']['attributes'][0]['value'],
+        data['patient']['person']['attributes'][0]['value'],
         columnMiddleNameLocal:
-          data['patient']['person']['attributes'][1]['value'],
+        data['patient']['person']['attributes'][1]['value'],
         columnLastNameLocal:
-          data['patient']['person']['attributes'][2]['value'],
+        data['patient']['person']['attributes'][2]['value'],
 
         columnGender: data['patient']['person']['gender'],
         columnBirthDate: data['patient']['person']['birthdate'],
@@ -138,12 +138,44 @@ class DatabaseHelper {
     );
   }
 
+  editPatient(Map data, int localId) async {
+    _database.update(
+        table: tablePatients,
+        values: <String, dynamic> {
+          columnGivenName: data['patient']['person']['names'][0]['givenName'],
+          columnMiddleName: data['patient']['person']['names'][0]['middleName'],
+          columnFamilyName: data['patient']['person']['names'][0]['familyName'],
+
+          columnAddress1: data['patient']['person']['addresses'][0]['address1'],
+          columnCityVillage:
+          data['patient']['person']['addresses'][0]['cityVillage'],
+          columnCountyDistrict:
+          data['patient']['person']['addresses'][0]['countyDistrict'],
+          columnStateProvince:
+          data['patient']['person']['addresses'][0]['stateProvince'],
+
+          columnFirstNameLocal:
+          data['patient']['person']['attributes'][0]['value'],
+          columnMiddleNameLocal:
+          data['patient']['person']['attributes'][1]['value'],
+          columnLastNameLocal:
+          data['patient']['person']['attributes'][2]['value'],
+
+          columnGender: data['patient']['person']['gender'],
+          columnBirthDate: data['patient']['person']['birthdate'],
+        },
+        where: '$columnId = ?',
+        whereArgs: <String> [localId.toString()],
+    );
+    return await getPatientByLocalId(localId);
+  }
+
   Future<int> insertOrUpdatePatientFromPersonalInfo(PatientPersonalInfo info) async {
     bool exists = await patientExists(info.uuid);
     if (!exists) {
       await _database.insert(
           table: tablePatients,
-          values: <String, dynamic>{
+          values: <String, dynamic> {
             columnUuid: info.uuid,
           }
       );

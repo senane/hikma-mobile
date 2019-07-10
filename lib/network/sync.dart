@@ -16,7 +16,7 @@ executeJob(String auth, job, DatabaseHelper dbHelper) async {
     print(job);
 
     if (patientIds != null) {
-      await dbHelper.updateLocalPatientIds(job['record_id'], patientIds);
+      await dbHelper.updateLocalPatientIds(job['local_id'], patientIds);
       await dbHelper.removeFromJobQueue(job['id']);
 
       String idString = job['id'].toString();

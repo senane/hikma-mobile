@@ -8,9 +8,11 @@ abstract class EditPatientEvent extends Equatable {
 class SaveButtonClicked extends EditPatientEvent {
   final Map data;
   final String uuid;
+  final int localId;
   SaveButtonClicked({
     @required this.data,
-    @required this.uuid}) : super ([data]);
+    @required this.uuid,
+    @required this.localId}) : super ([data]);
   @override
   String toString() => 'SaveButtonClicked';
 }
