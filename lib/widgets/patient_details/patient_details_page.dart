@@ -88,8 +88,6 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         color: hikmaPrimary,
                         tooltip: 'Edit',
                         onPressed: () {
-                          print('bravo');
-                          print(_localId);
                           Navigator.push(
                             context,
                             MaterialPageRoute(

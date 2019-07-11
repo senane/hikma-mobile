@@ -24,7 +24,6 @@ class PatientDetailsBloc extends Bloc<PatientDetailsEvent, PatientDetailsState> 
     if (event is PatientDetailsStarted) {
       PatientPersonalInfo patientData = await userRepository
           .getLocalPatientInfo(event.localId, event.uuid);
-      print(patientData.firstName);
       yield PatientDetailsLoaded(patientData: patientData);
     }
   }

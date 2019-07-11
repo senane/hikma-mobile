@@ -184,6 +184,8 @@ class DatabaseHelper {
     await _database.update(
         table: tablePatients,
         values: <String, dynamic>{
+          columnNID: info.nationalId,
+
           columnGivenName: info.firstName,
           columnFamilyName: info.lastName,
           columnPID: info.patientId,
