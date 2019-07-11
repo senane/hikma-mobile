@@ -4,7 +4,6 @@ import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/charts/simple_line.dart';
 import 'package:hikma_health/widgets/edit_patient/edit_patient_page.dart';
-import '../../colors.dart';
 import 'patient_details.dart';
 import 'patient_details_state.dart';
 
@@ -48,6 +47,33 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Patient Details"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.edit),
+              tooltip: 'Edit',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditPatientPage(
+                      uuid: _uuid,
+                      localId: _localId,
+                      userRepository: _userRepository,
+                    ),
+                  ),
+                ).then((value) {
+                  print('reloading');
+                  _patientBloc.dispatch(
+                      PatientDetailsStarted(
+                          localId: _localId,
+                          uuid: _uuid
+                      )
+                  );
+                  print('reloaded');
+                });
+              },
+            ),
+          ],
         ),
         body: BlocBuilder(
           bloc: _patientBloc,
@@ -82,32 +108,6 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                           fontFamily: 'sans-serif-condensed',
                           fontSize: 18,
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        color: hikmaPrimary,
-                        tooltip: 'Edit',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditPatientPage(
-                                uuid: _uuid,
-                                localId: _localId,
-                                userRepository: _userRepository,
-                              ),
-                            ),
-                          ).then((value) {
-                            print('reloading');
-                            _patientBloc.dispatch(
-                                PatientDetailsStarted(
-                                    localId: _localId,
-                                    uuid: _uuid
-                                )
-                            );
-                            print('reloaded');
-                          });
-                        },
                       ),
                     ],
                   ),
