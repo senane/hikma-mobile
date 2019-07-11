@@ -126,7 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             showDialog(
                                 context: context,
                                 builder: (context) {
-                                  return SyncView(userRepository: _userRepository);
+                                  return SyncView(
+                                      userRepository: _userRepository
+                                  );
                                 }
                             );
                           }
@@ -247,7 +249,8 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: CircleAvatar(
                 radius: 16,
                 backgroundImage: NetworkImage(
-                    '$API_BASE/patientImage?patientUuid=${patientsList[index].uuid}',
+                    '$API_BASE/patientImage?patientUuid='
+                        '${patientsList[index].uuid}',
                     headers: {'authorization': _basicAuth}
                 ),
                 backgroundColor: Colors.transparent

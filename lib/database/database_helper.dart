@@ -170,7 +170,8 @@ class DatabaseHelper {
     return await getPatientByLocalId(localId);
   }
 
-  Future<int> insertOrUpdatePatientFromPersonalInfo(PatientPersonalInfo info) async {
+  Future<int> insertOrUpdatePatientFromPersonalInfo(
+      PatientPersonalInfo info) async {
     bool exists = await patientExists(info.uuid);
     if (!exists) {
       await _database.insert(
