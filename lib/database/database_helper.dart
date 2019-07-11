@@ -255,12 +255,25 @@ class DatabaseHelper {
   }
 
   Future<SQLiteCursor> searchPatients(String query) async {
+    List<String> colsToSearch = [
+      columnGivenName,
+      columnMiddleName,
+      columnFamilyName,
+      columnPID,
+    ];
+    List<String> queryList = query.split(' ');
+    List<String> searchConditions = [];
+    queryList.forEach((word) {
+      List<String> cond = [];
+      colsToSearch.forEach((col) {
+        cond.add(col + " LIKE '%$word%'");
+      });
+      searchConditions.add('(${cond.join(' OR ')})');
+    });
+    String searchString = searchConditions.join(' AND ');
     return _database.rawQuery(
         "SELECT * FROM $tablePatients "
-            "WHERE ($columnGivenName LIKE '%$query%' "
-            "OR $columnMiddleName LIKE '%$query%' "
-            "OR $columnFamilyName LIKE '%$query%' "
-            "OR $columnPID LIKE '%$query%') "
+            "WHERE ($searchString) "
             "AND $columnPID IS NOT NULL "
     );
   }
