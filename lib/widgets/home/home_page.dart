@@ -82,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
         else if (state is HomeInitial) {
-          _searchController.text = state.query;
           _fieldEmpty = _searchController.text.isEmpty;
         }
       },
@@ -168,6 +167,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         onChanged: (query) {
                           setState(() =>
                           _fieldEmpty = _searchController.text.isEmpty);
+                          if (_fieldEmpty) {
+                            _homeBloc.dispatch(ClearButtonPressed());
+                          } else {
+                            _searchPatient(
+                                'bb0e512e-d225-11e4-9c67-080027b662ec',
+                                query,
+                                context
+                            );
+                          }
                         },
                         decoration: InputDecoration(
                           labelText: 'Search Patients',
@@ -176,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: _fieldEmpty
                                 ? null
                                 : () async {
+                              _searchNode.unfocus();
                               _searchPatient(
                                   'bb0e512e-d225-11e4-9c67-080027b662ec',
                                   _searchController.text,
@@ -186,6 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         focusNode: _searchNode,
                         onSubmitted: (query) async {
+                          _searchNode.unfocus();
                           _searchPatient(
                               'bb0e512e-d225-11e4-9c67-080027b662ec',
                               query,
@@ -280,7 +290,6 @@ class _HomeScreenState extends State<HomeScreen> {
       String query,
       BuildContext context) async {
     if (_searchController.text.isNotEmpty) {
-      _searchNode.unfocus();
       _homeBloc.dispatch(
           SearchButtonPressed(query: query, locationUuid: locationUuid));
     }
