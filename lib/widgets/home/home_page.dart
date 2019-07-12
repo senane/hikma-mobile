@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/widgets/new_patient/new_patient.dart';
 import 'package:hikma_health/widgets/patient_details/patient_details.dart';
 import 'package:hikma_health/widgets/sync/sync.dart';
+
 import 'home.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,23 +50,19 @@ class _HomeScreenState extends State<HomeScreen> {
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen(
                 (ConnectivityResult result) async {
-          setState(() {
-            _online = result != ConnectivityResult.none;
-            _searchPatient(
-                'bb0e512e-d225-11e4-9c67-080027b662ec',
-                _searchController.text,
-                context
-            );
-            if (_online) {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return SyncView(userRepository: _userRepository);
-                  }
-              );
-            }
-          });
-        });
+              _homeBloc.dispatch(ClearButtonPressed());
+              setState(() {
+                _online = result != ConnectivityResult.none;
+                if (_online) {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return SyncView(userRepository: _userRepository);
+                      }
+                  );
+                }
+              });
+            });
   }
 
   @override
@@ -77,11 +75,12 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                LoginPage(userRepository: _userRepository)
+                    LoginPage(userRepository: _userRepository)
             ),
           );
         }
         else if (state is HomeInitial) {
+          _searchController.text = state.query;
           _fieldEmpty = _searchController.text.isEmpty;
         }
       },
@@ -113,28 +112,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 _online
                     ? IconButton(
-                      icon: Icon(Icons.sync),
-                      tooltip: 'Sync',
-                      onPressed: () async {
-                        _searchPatient(
-                            'bb0e512e-d225-11e4-9c67-080027b662ec',
-                            _searchController.text,
-                            context
+                  icon: Icon(Icons.sync),
+                  tooltip: 'Sync',
+                  onPressed: () async {
+                    _searchPatient(
+                        'bb0e512e-d225-11e4-9c67-080027b662ec',
+                        _searchController.text,
+                        context
+                    );
+                    setState(() {
+                      if (_online) {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return SyncView(userRepository: _userRepository);
+                            }
                         );
-                        setState(() {
-                          if (_online) {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return SyncView(
-                                      userRepository: _userRepository
-                                  );
-                                }
-                            );
-                          }
-                        });
-                      },
-                    )
+                      }
+                    });
+                  },
+                )
                     : Container(width: 0, height: 0),
                 IconButton(
                   icon: Icon(Icons.exit_to_app),
@@ -166,18 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: <Widget>[
                       TextField(
                         controller: _searchController,
+                        focusNode: _searchNode,
                         onChanged: (query) {
                           setState(() =>
-                          _fieldEmpty = _searchController.text.isEmpty);
-                          if (_fieldEmpty) {
-                            _homeBloc.dispatch(ClearButtonPressed());
-                          } else {
-                            _searchPatient(
-                                'bb0e512e-d225-11e4-9c67-080027b662ec',
-                                query,
-                                context
-                            );
-                          }
+                          _fieldEmpty = _searchController.text.isEmpty
+                          );
                         },
                         decoration: InputDecoration(
                           labelText: 'Search Patients',
@@ -186,7 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: _fieldEmpty
                                 ? null
                                 : () async {
-                              _searchNode.unfocus();
                               _searchPatient(
                                   'bb0e512e-d225-11e4-9c67-080027b662ec',
                                   _searchController.text,
@@ -195,9 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                         ),
-                        focusNode: _searchNode,
                         onSubmitted: (query) async {
-                          _searchNode.unfocus();
                           _searchPatient(
                               'bb0e512e-d225-11e4-9c67-080027b662ec',
                               query,
@@ -249,8 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: CircleAvatar(
                 radius: 16,
                 backgroundImage: NetworkImage(
-                    '$API_BASE/patientImage?patientUuid='
-                        '${patientsList[index].uuid}',
+                    '$API_BASE/patientImage?patientUuid=${patientsList[index].uuid}',
                     headers: {'authorization': _basicAuth}
                 ),
                 backgroundColor: Colors.transparent
@@ -258,12 +244,10 @@ class _HomeScreenState extends State<HomeScreen> {
             title: Text(patientsList[index].name),
             subtitle: Text(patientsList[index].id),
             onTap: () async {
-              int localId;
-              if (patientsList[index].localId == null) {
+              int localId = patientsList[index].localId;
+              if (localId == null) {
                 localId = await _userRepository
                     .insertOrUpdatePatientByUuid(patientsList[index].uuid);
-              } else {
-                localId = patientsList[index].localId;
               }
               Navigator.push(
                 context,
@@ -274,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     userRepository: _userRepository,
                   ),
                 ),
-              ).then((value) {
+              ).then((_) {
                 _searchPatient(
                     'bb0e512e-d225-11e4-9c67-080027b662ec',
                     _searchController.text,
@@ -293,6 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String query,
       BuildContext context) async {
     if (_searchController.text.isNotEmpty) {
+      _searchNode.unfocus();
       _homeBloc.dispatch(
           SearchButtonPressed(query: query, locationUuid: locationUuid));
     }
