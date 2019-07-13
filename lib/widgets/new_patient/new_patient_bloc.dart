@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
@@ -20,7 +21,7 @@ class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
       NewPatientEvent event) async* {
     if (event is SaveButtonClicked) {
       yield NewPatientLoading();
-      userRepository.createPatientFromForm(event.data);
+      await userRepository.createPatientFromForm(event.data);
       yield NewPatientRegistered();
     }
   }

@@ -1,4 +1,3 @@
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,8 +5,6 @@ import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/constants.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:intl/intl.dart';
 
 import 'new_patient.dart';
 
@@ -24,11 +21,12 @@ class PatientRegistrationPage extends StatefulWidget {
 
 class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
 
-  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
+  final _formKey = GlobalKey<FormState>();
 
+  bool _justStarted = true;
   String _gender;
   DateTime _birthDate;
-//  TimeOfDay _birthTime;
+  TimeOfDay _birthTime;
 
   final _fieldControllers = {
     'firstName': TextEditingController(),
@@ -50,9 +48,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     'firstNameLocal': FocusNode(),
     'middleNameLocal': FocusNode(),
     'lastNameLocal': FocusNode(),
-    'gender': FocusNode(),
-    'birthDate': FocusNode(),
-    'birthTime': FocusNode(),
     'address': FocusNode(),
     'city': FocusNode(),
     'district': FocusNode(),
@@ -88,9 +83,8 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
               child: ListView(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 children: <Widget>[
-                  FormBuilder(
-                    key: _fbKey,
-                    autovalidate: false,
+                  Form(
+                    key: _formKey,
                     child: Column(
                       children: <Widget>[
                         _buildPersonalInfoFields(),
@@ -118,8 +112,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                         onPressed: () async {
                           if (_validateData()) {
                             Map data = _parseData();
-                            _newPatientBloc
-                                .dispatch(SaveButtonClicked(data: data));
+                            _newPatientBloc.dispatch(SaveButtonClicked(data: data));
                           }
                         },
                       )
@@ -134,110 +127,126 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     );
   }
 
+
   @override
   void dispose() {
     _fieldNodes.forEach((_, v) => v.dispose());
-//    _fieldControllers.forEach((_, v) => v.dispose());
+    _fieldControllers.forEach((_, v) => v.dispose());
     super.dispose();
   }
 
   Widget _buildPersonalInfoFields() {
     return Column(
       children: <Widget>[
-        _buildFormBuilderTextField(
-            'first_name',
+        _buildTextField(
             'First Name',
             true,
             _fieldControllers['firstName'],
             _fieldNodes['firstName'],
             _fieldNodes['middleName'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'middle_name',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'Middle Name',
             false,
             _fieldControllers['middleName'],
             _fieldNodes['middleName'],
             _fieldNodes['lastName'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'last_name',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'Last Name',
             true,
             _fieldControllers['lastName'],
             _fieldNodes['lastName'],
             _fieldNodes['firstNameLocal'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'local_first_name',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'Local First Name',
             false,
             _fieldControllers['firstNameLocal'],
             _fieldNodes['firstNameLocal'],
             _fieldNodes['middleNameLocal'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'local_middle_name',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'Local Middle Name',
             false,
             _fieldControllers['middleNameLocal'],
             _fieldNodes['middleNameLocal'],
             _fieldNodes['lastNameLocal'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'local_last_name',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'Local Last Name',
             false,
             _fieldControllers['lastNameLocal'],
             _fieldNodes['lastNameLocal'],
             null,
             TextInputAction.next),
-        FormBuilderRadio(
-          decoration: InputDecoration(labelText: 'Gender'),
-          leadingInput: true,
-          attribute: "gender",
-          validators: [
-            FormBuilderValidators.required(
-                errorText: 'This field cannot be empty'
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        DropdownButtonFormField(
+            value: _gender,
+            items: ['Male', 'Female', 'Other'].map((String gender) {
+              return new DropdownMenuItem<String>(
+                child: new Text(gender),
+                value: gender.substring(0, 1),
+              );
+            }).toList(),
+            onChanged: (String value) {
+              setState(() => _gender = value);
+            },
+            hint: Text('Gender'),
+            validator: (value) {
+              return value == null
+                  ? 'This field cannot be empty'
+                  : null;
+            }
+        ),
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        ButtonBar(
+          alignment: MainAxisAlignment.center,
+          children: <Widget>[
+            FlatButton(
+              child: Text(
+                _birthDate == null
+                    ? 'Birth date'
+                    : _birthDate.toIso8601String().substring(0, 10),
+                style: TextStyle(
+                  color:
+                  _birthDate == null && !_justStarted
+                      ? Colors.red
+                      : Colors.black,
+                ),
+              ),
+              onPressed: () async {
+                final DateTime selectedDate = await showDatePicker(
+                    context: context,
+                    initialDate: _birthDate == null
+                        ? DateTime.now()
+                        : _birthDate,
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now());
+                if (selectedDate != null) {
+                  setState(() => _birthDate = selectedDate);
+                }
+              },
+            ),
+            FlatButton(
+              child: Text(_birthTime == null ? 'Birth time' : _birthTime.format(context)),
+              onPressed: () async {
+                final TimeOfDay selectedTime = await showTimePicker(
+                  context: context,
+                  initialTime: _birthTime == null ? TimeOfDay.now() : _birthTime,
+                );
+                if (selectedTime != null) {
+                  setState(() => _birthTime = selectedTime);
+                }
+              },
             ),
           ],
-          options: [
-            "Male",
-            "Female",
-            "Other",
-          ]
-              .map((gender) => FormBuilderFieldOption(value: gender))
-              .toList(growable: false),
-          onChanged: (dynamic value) async {
-            _gender = value.substring(0, 1);
-          },
         ),
-        _padding(),
-        FormBuilderDateTimePicker(
-          attribute: 'birth_date',
-          inputType: InputType.date,
-          format: DateFormat('yyyy-MM-dd'),
-          decoration: InputDecoration(labelText: 'Birth date (YYYY-MM-DD)'),
-          validators: [
-            FormBuilderValidators.required(
-                errorText: 'This field cannot be empty'
-            ),
-          ],
-          onChanged: (dynamic value) async {
-            _birthDate = value;
-          },
-        ),
-        _padding(),
-//        FormBuilderDateTimePicker(
-//          attribute: 'birth_time',
-//          inputType: InputType.time,
-//          format: DateFormat('HH:MM'),
-//          decoration: InputDecoration(labelText: 'Birth time'),
-//          onChanged: (dynamic value) async {
-//            _birthTime = value;
-//          },
-//        ),
-//        _padding(),
       ],
     );
   }
@@ -245,81 +254,71 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
   Widget _buildAddressInfoFields() {
     return Column(
       children: <Widget>[
-        _buildFormBuilderTextField(
-            'address',
+        _buildTextField(
             'Address',
             false,
             _fieldControllers['address'],
             _fieldNodes['address'],
             _fieldNodes['city'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'city_village',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'City/Village',
             true,
             _fieldControllers['city'],
             _fieldNodes['city'],
             _fieldNodes['district'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'district',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'District',
             false,
             _fieldControllers['district'],
             _fieldNodes['district'],
             _fieldNodes['state'],
             TextInputAction.next),
-        _buildFormBuilderTextField(
-            'state_province',
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        _buildTextField(
             'State/Province',
             false,
             _fieldControllers['state'],
             _fieldNodes['state'],
             null,
             TextInputAction.done),
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
       ],
     );
   }
 
-  Widget _padding() {
-    return Padding(padding: EdgeInsets.symmetric(vertical: 8));
-  }
-
-  Widget _buildFormBuilderTextField(String attribute, String label, bool required,
+  Widget _buildTextField(String label, bool required,
       TextEditingController controller, FocusNode node,
       FocusNode nextNode, TextInputAction action) {
-    return Column (
-      children: <Widget>[
-        FormBuilderTextField(
-          attribute: attribute,
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: label,
-          ),
-          validators: [
-            (value) {
-              if (required && value.isEmpty) {
-                return 'This field cannot be empty';
-              }
-            },
-          ],
-          focusNode: node,
-          textInputAction: action,
-          onFieldSubmitted: (value) {
-            node.unfocus();
-            if (nextNode != null) {
-              FocusScope.of(context).requestFocus(nextNode);
-            }
-          },
-        ),
-        _padding(),
-      ],
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+      ),
+      validator: (value) {
+        return required && value.isEmpty
+            ? 'This field cannot be empty'
+            : null;
+      },
+      focusNode: node,
+      textInputAction: action,
+      onFieldSubmitted: (value) {
+        node.unfocus();
+        if (nextNode != null) {
+          FocusScope.of(context).requestFocus(nextNode);
+        }
+      },
     );
-
   }
 
   bool _validateData() {
-    return _fbKey.currentState.validate() && _birthDate != null;
+    setState(() {
+      _justStarted = false;
+    });
+    return _formKey.currentState.validate() && _birthDate != null;
   }
 
   Map _parseData() {
@@ -391,6 +390,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
       patient: patient.toMap(),
       relationships: [],
     );
+
     return data.toMap();
   }
 }
