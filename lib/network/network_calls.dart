@@ -33,10 +33,9 @@ Future<String> baseAuth({@required auth}) async {
   return session.authenticated ? auth : null;
 }
 
-Future<LocationSearchList> getLocations({@required String auth}) async {
+Future<LocationSearchList> getLocations() async {
   var response = await http
-      .get('$API_BASE/location?tag=Login Location',
-    headers: {'authorization': auth},)
+      .get('$API_BASE/location?tag=Login Location')
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -57,12 +56,9 @@ Future<List<PatientSearchResult>> queryPatient({
   @required String auth,
   @required String locationUuid,
   @required String query}) async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
-  var response = await http
-      .get('$API_BASE/bahmnicore/search/patient'
-      '?loginLocationUuid=$locationUuid'
-      '&q=$query',
-    headers: {'authorization': basicAuth},)
+  var response = await http.get('$API_BASE/bahmnicore/search/patient'
+      '?loginLocationUuid=$locationUuid&q=$query',
+    headers: {'authorization': auth},)
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -80,10 +76,8 @@ Future<List<PatientSearchResult>> queryPatient({
 Future<PatientPersonalInfo> getPatient({
   @required String auth,
   @required String uuid}) async {
-  var response = await http
-      .get('$API_BASE/patient/$uuid?v=full',
-    headers: {'authorization': auth},)
-      .timeout(Duration(seconds: 30));
+  var response = await http.get('$API_BASE/patient/$uuid?v=full',
+    headers: {'authorization': auth},).timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
         ' Make sure you\'re connected');
@@ -134,8 +128,6 @@ updatePatient({
   if (response.statusCode == 401) {
     return null;
   }
-  final responseJson = json.decode(response.body);
-  print(responseJson);
 }
 
 String createBasicAuth(String username, String password) =>

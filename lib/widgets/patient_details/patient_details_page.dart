@@ -4,6 +4,7 @@ import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/charts/simple_line.dart';
 import 'package:hikma_health/widgets/edit_patient/edit_patient_page.dart';
+
 import 'patient_details.dart';
 import 'patient_details_state.dart';
 
@@ -62,14 +63,12 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                     ),
                   ),
                 ).then((value) {
-                  print('reloading');
                   _patientBloc.dispatch(
                       PatientDetailsStarted(
                           localId: _localId,
                           uuid: _uuid
                       )
                   );
-                  print('reloaded');
                 });
               },
             ),
@@ -80,7 +79,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
           builder: (BuildContext context, state) {
             if (state is PatientDetailsLoading) {
               _patientBloc.dispatch(
-                  PatientDetailsStarted(localId: _localId, uuid: _uuid),
+                PatientDetailsStarted(localId: _localId, uuid: _uuid),
               );
               return Center(child: CircularProgressIndicator());
             }

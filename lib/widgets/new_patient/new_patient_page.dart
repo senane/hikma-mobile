@@ -26,7 +26,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
   bool _justStarted = true;
   String _gender;
   DateTime _birthDate;
-  TimeOfDay _birthTime;
 
   final _fieldControllers = {
     'firstName': TextEditingController(),
@@ -230,18 +229,6 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                     lastDate: DateTime.now());
                 if (selectedDate != null) {
                   setState(() => _birthDate = selectedDate);
-                }
-              },
-            ),
-            FlatButton(
-              child: Text(_birthTime == null ? 'Birth time' : _birthTime.format(context)),
-              onPressed: () async {
-                final TimeOfDay selectedTime = await showTimePicker(
-                  context: context,
-                  initialTime: _birthTime == null ? TimeOfDay.now() : _birthTime,
-                );
-                if (selectedTime != null) {
-                  setState(() => _birthTime = selectedTime);
                 }
               },
             ),

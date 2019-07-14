@@ -38,7 +38,9 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AuthenticationBloc>(
-      bloc: _authenticationBloc,
+      builder: (context) {
+        return _authenticationBloc;
+      },
       child: MaterialApp(
         theme: buildTheme(),
         home: BlocBuilder<AuthenticationEvent, AuthenticationState>(

@@ -1,7 +1,7 @@
 import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
-import 'package:test_api/test_api.dart';
 import 'package:hikma_health/network/network_calls.dart';
+import 'package:test_api/test_api.dart';
 
 main() {
   String authentication;
@@ -13,7 +13,7 @@ main() {
   });
 
   test("Login Locations", () async {
-    LocationSearchList locations = await getLocations(auth: authentication);
+    LocationSearchList locations = await getLocations();
     List<LocationSearchResult> locationList = locations.locationSearchList;
     print('${locationList.length} locations found.');
     for (LocationSearchResult location in locationList) {
