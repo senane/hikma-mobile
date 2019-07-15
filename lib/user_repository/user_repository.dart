@@ -65,12 +65,12 @@ class UserRepository {
       SQLiteCursor jobs = await _dbHelper.queryJobs();
       String auth = await readAuth();
       for (var job in jobs) {
-        if (job['job_id'] == JOB_CREATE_PATIENT) {
-          Map dataMap = json.decode(job['data']);
+        if (job[columnJobId] == JOB_CREATE_PATIENT) {
+          Map dataMap = json.decode(job[columnData]);
           PatientIds patientIds = await createPatient(auth: auth, body: dataMap);
           if (patientIds != null) {
-            await _dbHelper.updateLocalPatientIds(job['local_id'], patientIds);
-            await _dbHelper.removeFromJobQueue(job['id']);
+            await _dbHelper.updateLocalPatientIds(job[columnLocalId], patientIds);
+            await _dbHelper.removeFromJobQueue(job[columnId]);
           }
         } else if (job[columnJobId] == JOB_UPDATE_PATIENT) {
           int localId = job[columnLocalId];
@@ -87,7 +87,7 @@ class UserRepository {
   updateAllPatients() async {
     SQLiteCursor patients = await _dbHelper.queryLocalPatients();
     for (var patient in patients) {
-      await insertOrUpdatePatientByUuid(patient['uuid']);
+      await insertOrUpdatePatientByUuid(patient[columnUuid]);
     }
   }
 
