@@ -27,7 +27,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _fieldEmpty = true, _online = false;
+  bool _fieldEmpty = true, _online = true;
   String _basicAuth;
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
