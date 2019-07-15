@@ -6,20 +6,31 @@ import 'package:hikma_health/constants.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 
-import 'new_patient.dart';
+import 'edit_patient.dart';
 
-class PatientRegistrationPage extends StatefulWidget {
+class EditPatientPage extends StatefulWidget {
+
   final UserRepository userRepository;
+  final int localId;
+  final String uuid;
 
-  PatientRegistrationPage({Key key, @required this.userRepository})
+  EditPatientPage({
+    Key key,
+    @required this.userRepository,
+    @required this.localId,
+    @required this.uuid,
+  })
       : assert(userRepository != null),
+        assert(localId != null),
+        assert(uuid != null),
         super(key: key);
 
   @override
-  _PatientRegistrationPageState createState() => _PatientRegistrationPageState();
+  _EditPatientPageState createState() => _EditPatientPageState();
 }
 
-class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
+class _EditPatientPageState extends State<EditPatientPage> {
+
 
   final _formKey = GlobalKey<FormState>();
 
@@ -27,18 +38,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
   String _gender;
   DateTime _birthDate;
 
-  final _fieldControllers = {
-    'firstName': TextEditingController(),
-    'middleName': TextEditingController(),
-    'lastName': TextEditingController(),
-    'firstNameLocal': TextEditingController(),
-    'middleNameLocal': TextEditingController(),
-    'lastNameLocal': TextEditingController(),
-    'address': TextEditingController(),
-    'city': TextEditingController(),
-    'district': TextEditingController(),
-    'state': TextEditingController(),
-  };
+  Map<String, TextEditingController> _fieldControllers;
 
   final _fieldNodes = {
     'firstName': FocusNode(),
@@ -53,37 +53,68 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
     'state': FocusNode(),
   };
 
+  set _patientData(patientData) {
+    _gender = patientData.gender;
+    _birthDate = DateTime.parse(patientData.birthDate);
+    _fieldControllers = {
+      'firstName': TextEditingController(text: patientData.firstName),
+      'middleName': TextEditingController(text: patientData.middleName),
+      'lastName': TextEditingController(text: patientData.lastName),
+      'firstNameLocal': TextEditingController(
+          text: patientData.firstNameLocal),
+      'middleNameLocal': TextEditingController(
+          text: patientData.middleNameLocal),
+      'lastNameLocal': TextEditingController(
+          text: patientData.lastNameLocal),
+      'address': TextEditingController(text: patientData.address),
+      'city': TextEditingController(text: patientData.cityVillage),
+      'district': TextEditingController(text: patientData.district),
+      'state': TextEditingController(text: patientData.state),
+    };
+  }
+
+  int get _localId => widget.localId;
+  String get _uuid => widget.uuid;
   UserRepository get _userRepository => widget.userRepository;
-  NewPatientBloc _newPatientBloc;
+  EditPatientBloc _editPatientBloc;
 
   @override
   void initState() {
-    _newPatientBloc = NewPatientBloc(userRepository: _userRepository);
+    _editPatientBloc = EditPatientBloc(userRepository: _userRepository);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener(
-      bloc: _newPatientBloc,
+      bloc: _editPatientBloc,
       listener: (context, state) {
-        if (state is NewPatientRegistered) {
+        if (state is EditPatientLoading) {
+          _editPatientBloc.dispatch(
+            EditPatientStarted(localId: _localId, uuid: _uuid),
+          );
+        } else if (state is EditPatientInitial) {
+          _patientData = state.patientData;
+        } else if (state is EditPatientSaved) {
           Navigator.pop(context);
         }
       },
-      child: BlocBuilder(
-        bloc: _newPatientBloc,
-        builder: (context, state) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('New Patient'),
-            ),
-            body: SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Edit Patient'),
+        ),
+        body: BlocBuilder(
+          bloc: _editPatientBloc,
+          builder: (context, state) {
+            return state is EditPatientLoading
+                ? Center(child: CircularProgressIndicator())
+                : SafeArea(
               child: ListView(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 children: <Widget>[
                   Form(
                     key: _formKey,
+                    autovalidate: false,
                     child: Column(
                       children: <Widget>[
                         _buildPersonalInfoFields(),
@@ -99,7 +130,7 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                           Navigator.pop(context);
                         },
                       ),
-                      state is NewPatientLoading
+                      state is EditPatientSaving
                           ? CircularProgressIndicator()
                           : RaisedButton(
                         child: Text('SAVE'),
@@ -111,7 +142,13 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                         onPressed: () async {
                           if (_validateData()) {
                             Map data = _parseData();
-                            _newPatientBloc.dispatch(SaveButtonClicked(data: data));
+                            _editPatientBloc.dispatch(
+                                SaveButtonClicked(
+                                  data: data,
+                                  uuid: state.patientData.uuid,
+                                  localId: _localId,
+                                )
+                            );
                           }
                         },
                       )
@@ -119,13 +156,12 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                   ),
                 ],
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
-
 
   @override
   void dispose() {
@@ -232,6 +268,18 @@ class _PatientRegistrationPageState extends State<PatientRegistrationPage> {
                 }
               },
             ),
+//            FlatButton(
+//              child: Text(_birthTime == null ? 'Birth time' : _birthTime.format(context)),
+//              onPressed: () async {
+//                final TimeOfDay selectedTime = await showTimePicker(
+//                  context: context,
+//                  initialTime: _birthTime == null ? TimeOfDay.now() : _birthTime,
+//                );
+//                if (selectedTime != null) {
+//                  setState(() => _birthTime = selectedTime);
+//                }
+//              },
+//            ),
           ],
         ),
       ],

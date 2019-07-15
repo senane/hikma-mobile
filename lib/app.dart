@@ -1,11 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/home/home.dart';
 import 'package:hikma_health/widgets/login/login.dart';
+import 'package:hikma_health/widgets/splash/splash_screen.dart';
 
 import 'authentication/authentication.dart';
 
@@ -27,6 +27,7 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   AuthenticationBloc _authenticationBloc;
   UserRepository get _userRepository => widget.userRepository;
+  bool _autoAuth = false;
 
   @override
   void initState() {
@@ -38,44 +39,39 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AuthenticationBloc>(
-      bloc: _authenticationBloc,
+      builder: (context) {
+        return _authenticationBloc;
+      },
       child: MaterialApp(
         theme: buildTheme(),
-        home: BlocBuilder<AuthenticationEvent, AuthenticationState>(
+        home: BlocListener(
           bloc: _authenticationBloc,
-          builder: (BuildContext context, AuthenticationState state) {
-            if (state is AuthenticationAuthenticated) {
-              if (state.auto) {
+          listener: (context, state) {
+            if (state is AuthenticationAuthenticated && !state.auto) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        HomeScreen(userRepository: _userRepository)
+                ),
+              );
+            }
+          },
+          child: BlocBuilder<AuthenticationEvent, AuthenticationState>(
+            bloc: _authenticationBloc,
+            builder: (BuildContext context, AuthenticationState state) {
+              if (state is AuthenticationUninitialized) {
+                return SplashScreen();
+              } else if (state is AuthenticationAuthenticated && state.auto) {
+                _autoAuth = true;
                 return HomeScreen(userRepository: _userRepository);
               } else {
-                SchedulerBinding.instance.addPostFrameCallback((_) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            HomeScreen(userRepository: _userRepository)
-                    ),
-                  );
-                });
-                return LoginPage(userRepository: _userRepository);
+                return _autoAuth
+                    ? HomeScreen(userRepository: _userRepository)
+                    : LoginPage(userRepository: _userRepository);
               }
-            } else {
-              return LoginPage(userRepository: _userRepository);
-            }
-            // TODO tweak here and make a splash screen
-//            if (state is AuthenticationUninitialized) {
-//              return SplashPage();
-//            }
-//            if (state is AuthenticationAuthenticated) {
-//              return HomePage();
-//            }
-//            if (state is AuthenticationUnauthenticated) {
-//              return LoginPage(userRepository: _userRepository);
-//            }
-//            if (state is AuthenticationLoading) {
-//              return LoadingIndicator();
-//            }
-          },
+            },
+          ),
         ),
       ),
     );

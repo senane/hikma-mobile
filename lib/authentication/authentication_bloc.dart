@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:bloc/bloc.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:meta/meta.dart';
-import 'package:bloc/bloc.dart';
 
 import 'authentication_event.dart';
 import 'authentication_state.dart';
@@ -24,6 +24,9 @@ class AuthenticationBloc
     if (event is AppStarted) {
       final bool hasAuth = await userRepository.hasAuth();
       if (hasAuth) {
+        /// This is just to give at least one second for the splash screen to
+        /// properly when the already logged in user runs the app
+        await Future.delayed(Duration(seconds: 1));
         await userRepository.initDatabase();
         yield AuthenticationAuthenticated(auto: true);
       } else {

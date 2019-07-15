@@ -30,12 +30,12 @@ dependencies:
   connectivity: ^0.4.3+1
 
   # BLOC
-  flutter_bloc: ^0.15.1
-  equatable: ^0.2.4
+  flutter_bloc: ^0.16.0
+  equatable: ^0.2.6
 
   # Data
   flutter_sqlcipher: ^0.4.3
-  shared_preferences: ^0.5.2
+  shared_preferences: ^0.5.3+2
   flutter_secure_storage: ^3.2.1+1
 
 dev_dependencies:

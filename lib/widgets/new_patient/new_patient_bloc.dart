@@ -21,7 +21,7 @@ class NewPatientBloc extends Bloc<NewPatientEvent, NewPatientState> {
       NewPatientEvent event) async* {
     if (event is SaveButtonClicked) {
       yield NewPatientLoading();
-      userRepository.createPatientFromForm(event.data);
+      await userRepository.createPatientFromForm(event.data);
       yield NewPatientRegistered();
     }
   }

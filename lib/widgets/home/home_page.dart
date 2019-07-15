@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/widgets/new_patient/new_patient.dart';
 import 'package:hikma_health/widgets/patient_details/patient_details.dart';
 import 'package:hikma_health/widgets/sync/sync.dart';
+
 import 'home.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,7 +27,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _fieldEmpty = true, _online = false;
+  bool _fieldEmpty = true, _online = true;
   String _basicAuth;
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
@@ -48,19 +50,19 @@ class _HomeScreenState extends State<HomeScreen> {
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen(
                 (ConnectivityResult result) async {
-          _homeBloc.dispatch(ClearButtonPressed());
-          setState(() {
-            _online = result != ConnectivityResult.none;
-            if (_online) {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return SyncView(userRepository: _userRepository);
-                  }
-              );
-            }
-          });
-        });
+              _homeBloc.dispatch(ClearButtonPressed());
+              setState(() {
+                _online = result != ConnectivityResult.none;
+                if (_online) {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return SyncView(userRepository: _userRepository);
+                      }
+                  );
+                }
+              });
+            });
   }
 
   @override
@@ -73,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                LoginPage(userRepository: _userRepository)
+                    LoginPage(userRepository: _userRepository)
             ),
           );
         }
@@ -110,22 +112,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 _online
                     ? IconButton(
-                      icon: Icon(Icons.sync),
-                      tooltip: 'Sync',
-                      onPressed: () async {
-                        _homeBloc.dispatch(ClearButtonPressed());
-                        setState(() {
-                          if (_online) {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return SyncView(userRepository: _userRepository);
-                                }
-                            );
-                          }
-                        });
-                      },
-                    )
+                  icon: Icon(Icons.sync),
+                  tooltip: 'Sync',
+                  onPressed: () async {
+                    _searchPatient(
+                        'bb0e512e-d225-11e4-9c67-080027b662ec',
+                        _searchController.text,
+                        context
+                    );
+                    setState(() {
+                      if (_online) {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return SyncView(userRepository: _userRepository);
+                            }
+                        );
+                      }
+                    });
+                  },
+                )
                     : Container(width: 0, height: 0),
                 IconButton(
                   icon: Icon(Icons.exit_to_app),
@@ -157,9 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: <Widget>[
                       TextField(
                         controller: _searchController,
+                        focusNode: _searchNode,
                         onChanged: (query) {
                           setState(() =>
-                          _fieldEmpty = _searchController.text.isEmpty);
+                          _fieldEmpty = _searchController.text.isEmpty
+                          );
                         },
                         decoration: InputDecoration(
                           labelText: 'Search Patients',
@@ -176,7 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                         ),
-                        focusNode: _searchNode,
                         onSubmitted: (query) async {
                           _searchPatient(
                               'bb0e512e-d225-11e4-9c67-080027b662ec',
@@ -236,17 +243,28 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             title: Text(patientsList[index].name),
             subtitle: Text(patientsList[index].id),
-            onTap: () {
+            onTap: () async {
+              int localId = patientsList[index].localId;
+              if (localId == null) {
+                localId = await _userRepository
+                    .insertOrUpdatePatientByUuid(patientsList[index].uuid);
+              }
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PatientDetailsScreen(
                     uuid: patientsList[index].uuid,
-                    localId: patientsList[index].localId,
+                    localId: localId,
                     userRepository: _userRepository,
                   ),
                 ),
-              );
+              ).then((_) {
+                _searchPatient(
+                    'bb0e512e-d225-11e4-9c67-080027b662ec',
+                    _searchController.text,
+                    context
+                );
+              });
             },
           );
         },
