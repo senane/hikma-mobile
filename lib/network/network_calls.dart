@@ -1,17 +1,22 @@
 import 'dart:convert';
+
 import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/model/session.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:meta/meta.dart';
 
 const String API_BASE =
-    'https://demo-staging.hikmahealth.org/openmrs/ws/rest/v1';
+    'https://demo.hikmahealth.org/openmrs/ws/rest/v1';
 
-Future<String> authenticate(username, password) async {
+Future<String> auth({@required username, @required password}) async {
   String basicAuth = createBasicAuth(username, password);
+  return baseAuth(auth: basicAuth);
+}
+
+Future<String> baseAuth({@required auth}) async {
   var response = await http
-      .get('$API_BASE/session', headers: {'authorization': basicAuth},)
+      .get('$API_BASE/session', headers: {'authorization': auth},)
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -25,19 +30,12 @@ Future<String> authenticate(username, password) async {
   }
   final responseJson = json.decode(response.body);
   Session session = Session.fromJson(responseJson);
-  if (session.authenticated) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth', basicAuth);
-    return session.id;
-  }
-  return session.authenticated ? session.id : null;
+  return session.authenticated ? auth : null;
 }
 
 Future<LocationSearchList> getLocations() async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
   var response = await http
-      .get('$API_BASE/location?tag=Login Location',
-    headers: {'authorization': basicAuth},)
+      .get('$API_BASE/location?tag=Login Location')
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -54,14 +52,13 @@ Future<LocationSearchList> getLocations() async {
   return locations;
 }
 
-Future<List<PatientSearchResult>> queryPatient(
-    String locationUuid, String query) async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
-  var response = await http
-      .get('$API_BASE/bahmnicore/search/patient'
-      '?loginLocationUuid=$locationUuid'
-      '&q=$query',
-    headers: {'authorization': basicAuth},)
+Future<List<PatientSearchResult>> queryPatient({
+  @required String auth,
+  @required String locationUuid,
+  @required String query}) async {
+  var response = await http.get('$API_BASE/bahmnicore/search/patient'
+      '?loginLocationUuid=$locationUuid&q=$query',
+    headers: {'authorization': auth},)
       .timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
@@ -76,12 +73,11 @@ Future<List<PatientSearchResult>> queryPatient(
   return PatientSearchList.fromJson(responseJson).patientSearchList;
 }
 
-Future<PatientPersonalInfo> getPatient(String patientUuid) async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
-  var response = await http
-      .get('$API_BASE/patient/$patientUuid?v=full',
-    headers: {'authorization': basicAuth},)
-      .timeout(Duration(seconds: 30));
+Future<PatientPersonalInfo> getPatient({
+  @required String auth,
+  @required String uuid}) async {
+  var response = await http.get('$API_BASE/patient/$uuid?v=full',
+    headers: {'authorization': auth},).timeout(Duration(seconds: 30));
   if (response == null) {
     print('network_calls.dart: Status: ${response.statusCode},'
         ' Make sure you\'re connected');
@@ -95,12 +91,11 @@ Future<PatientPersonalInfo> getPatient(String patientUuid) async {
   return PatientPersonalInfo.fromJson(responseJson);
 }
 
-Future<String> createPatient({Map body}) async {
-  String basicAuth = createBasicAuth('superman', 'Admin123');
+Future<PatientIds> createPatient({@required auth, @required Map body}) async {
   var data = json.encode(body).replaceAll('"null"', 'null');
   var response = await http
       .post('$API_BASE/bahmnicore/patientprofile', body: data,
-      headers: {'authorization': basicAuth, 'content-type': 'application/json'})
+      headers: {'authorization': auth, 'content-type': 'application/json'})
       .timeout(Duration(seconds: 30));
 
   if (response == null) {
@@ -111,7 +106,28 @@ Future<String> createPatient({Map body}) async {
   if (response.statusCode == 401) {
     return null;
   }
-  return response.body;
+  final responseJson = json.decode(response.body);
+  return PatientIds.fromJson(responseJson);
+}
+
+updatePatient({
+  @required auth,
+  @required Map body,
+  @required String uuid}) async {
+  var data = json.encode(body).replaceAll('"null"', 'null');
+  var response = await http
+      .post('$API_BASE/bahmnicore/patientprofile/$uuid?v=full', body: data,
+      headers: {'authorization': auth, 'content-type': 'application/json'})
+      .timeout(Duration(seconds: 30));
+
+  if (response == null) {
+    print('network_calls.dart: Status: ${response.statusCode},'
+        ' Make sure you\'re connected');
+    throw ('Status: ${response.statusCode}, Make sure you\'re connected');
+  }
+  if (response.statusCode == 401) {
+    return null;
+  }
 }
 
 String createBasicAuth(String username, String password) =>
