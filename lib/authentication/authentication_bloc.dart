@@ -23,10 +23,10 @@ class AuthenticationBloc
   ) async* {
     if (event is AppStarted) {
       final bool hasAuth = await userRepository.hasAuth();
+      /// This is just to give at least one second for the splash screen to
+      /// display properly when the already logged in user runs the app
+      await Future.delayed(Duration(seconds: 1));
       if (hasAuth) {
-        /// This is just to give at least one second for the splash screen to
-        /// properly when the already logged in user runs the app
-        await Future.delayed(Duration(seconds: 1));
         await userRepository.initDatabase();
         yield AuthenticationAuthenticated(auto: true);
       } else {
