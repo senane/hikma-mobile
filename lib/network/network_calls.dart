@@ -33,7 +33,7 @@ Future<String> baseAuth({@required auth}) async {
   return session.authenticated ? auth : null;
 }
 
-Future<LocationSearchList> getLocations() async {
+Future<List<LoginLocation>> getLocations() async {
   var response = await http
       .get('$API_BASE/location?tag=Login Location')
       .timeout(Duration(seconds: 30));
@@ -48,8 +48,7 @@ Future<LocationSearchList> getLocations() async {
         'Make sure your credentials are correct');
   }
   final responseJson = json.decode(response.body);
-  LocationSearchList locations = LocationSearchList.fromJson(responseJson);
-  return locations;
+  return LoginLocationList.fromJson(responseJson).locationSearchList;
 }
 
 Future<List<PatientSearchResult>> queryPatient({
