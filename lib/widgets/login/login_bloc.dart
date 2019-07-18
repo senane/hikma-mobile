@@ -34,12 +34,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } else if (event is LoginButtonPressed) {
       yield LoginLoading();
       try {
-        final token = await userRepository.authenticate(
+        final auth = await userRepository.authenticate(
           username: event.username,
           password: event.password,
         );
-        if (token != null) {
-          authenticationBloc.dispatch(LoggedIn(auth: token));
+        if (auth != null) {
+          authenticationBloc.dispatch(LoggedIn(auth: auth, location: event.location));
         }
         yield LoginInitial(locations: locations);
       } catch (error) {

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:hikma_health/model/location.dart';
 import 'package:meta/meta.dart';
 
 abstract class LoginEvent extends Equatable {
@@ -14,15 +15,18 @@ class LoginStarted extends LoginEvent {
 class LoginButtonPressed extends LoginEvent {
   final String username;
   final String password;
+  final LoginLocation location;
 
   LoginButtonPressed({
     @required this.username,
     @required this.password,
-  }) : super([username, password]);
+    @required this.location
+  }) : super([username, password, location]);
 
   @override
   String toString() =>
-      'LoginButtonPressed { username: $username, password: $password }';
+      'LoginButtonPressed { username: $username, password: $password,'
+          ' location: $location }';
 }
 
 class LoginCancelled extends LoginEvent {

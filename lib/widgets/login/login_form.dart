@@ -158,6 +158,7 @@ class _LoginFormState extends State<LoginForm> {
       _loginBloc.dispatch(LoginButtonPressed(
         username: _usernameController.text,
         password: _passwordController.text,
+        location: _location,
       ));
     }
   }

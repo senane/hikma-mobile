@@ -32,17 +32,16 @@ class AuthenticationBloc
       } else {
         yield AuthenticationUnauthenticated();
       }
-    }
-    if (event is LoggedIn) {
+    } else if (event is LoggedIn) {
       yield AuthenticationLoading();
       await userRepository.persistAuth(event.auth);
+      await userRepository.persistLocation(event.location);
       await userRepository.initDatabase();
       yield AuthenticationAuthenticated(auto: false);
-    }
-
-    if (event is LoggedOut) {
+    } else if (event is LoggedOut) {
       yield AuthenticationLoading();
       await userRepository.deleteAuth();
+      await userRepository.deleteLocation();
       await userRepository.deleteDatabase();
       yield AuthenticationUnauthenticated();
     }

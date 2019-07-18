@@ -1,5 +1,5 @@
-import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
 
 abstract class HomeEvent extends Equatable {
   HomeEvent([List props = const []]) : super(props);
@@ -7,16 +7,12 @@ abstract class HomeEvent extends Equatable {
 
 class SearchButtonPressed extends HomeEvent {
   final String query;
-  final String locationUuid;
 
-  SearchButtonPressed({
-    @required this.query,
-    @required this.locationUuid,
-  }) : super([query, locationUuid]);
+  SearchButtonPressed({@required this.query,}) : super([query]);
 
   @override
   String toString() =>
-      'SearchButtonPressed { query: $query, locationUuid, $locationUuid }';
+      'SearchButtonPressed { query: $query }';
 }
 
 class ClearButtonPressed extends HomeEvent {

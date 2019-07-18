@@ -5,6 +5,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/database/database_helper.dart';
+import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:meta/meta.dart';
@@ -48,6 +49,33 @@ class UserRepository {
   Future<bool> hasAuth() async {
     /// check auth in keystore/keychain
     return await readAuth() != null;
+  }
+
+  Future<void> persistLocation(LoginLocation location) async {
+    /// write to keystore/keychain`
+    await _secureStorage.write(key: 'location_name', value: location.name);
+    await _secureStorage.write(key: 'location_uuid', value: location.uuid);
+  }
+
+  Future<void> deleteLocation() async {
+    /// delete from keystore/keychain
+    await _secureStorage.delete(key: 'location_name');
+    await _secureStorage.delete(key: 'location_uuid');
+  }
+
+  Future<String> readLocationUuid() async {
+    /// read from keystore/keychain
+    return _secureStorage.read(key: 'location_uuid');
+  }
+
+  Future<String> readLocationName() async {
+    /// read from keystore/keychain
+    return _secureStorage.read(key: 'location_name');
+  }
+
+  Future<bool> hasLocation() async {
+    /// check location in keystore/keychain
+    return await readLocationUuid() != null && await readLocationName() != null;
   }
 
   Future<SQLiteDatabase> initDatabase() async {
