@@ -13,7 +13,7 @@ class LoginStarting extends LoginState {
 
 class LoginInitial extends LoginState {
 
-  final List<LoginLocation> locations;
+  final List<Location> locations;
 
   LoginInitial({@required this.locations}) : super([locations]);
 

@@ -15,7 +15,7 @@ class LoginStarted extends LoginEvent {
 class LoginButtonPressed extends LoginEvent {
   final String username;
   final String password;
-  final LoginLocation location;
+  final Location location;
 
   LoginButtonPressed({
     @required this.username,

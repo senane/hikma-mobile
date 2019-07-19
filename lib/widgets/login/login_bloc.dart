@@ -14,7 +14,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final UserRepository userRepository;
   final AuthenticationBloc authenticationBloc;
 
-  List<LoginLocation> locations;
+  List<Location> locations;
 
   LoginBloc({
     @required this.userRepository,

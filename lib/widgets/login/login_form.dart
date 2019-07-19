@@ -30,8 +30,8 @@ class _LoginFormState extends State<LoginForm> {
 
   LoginBloc get _loginBloc => widget.loginBloc;
 
-  List<LoginLocation> _locations;
-  LoginLocation _location;
+  List<Location> _locations;
+  Location _location;
 
   @override
   Widget build(BuildContext context) {
@@ -95,13 +95,13 @@ class _LoginFormState extends State<LoginForm> {
               SizedBox(height: 16),
               DropdownButtonFormField(
                   value: _location,
-                  items: _locations.map((LoginLocation location) {
-                    return new DropdownMenuItem<LoginLocation>(
+                  items: _locations.map((Location location) {
+                    return new DropdownMenuItem<Location>(
                       child: new Text(location.name),
                       value: location,
                     );
                   }).toList(),
-                  onChanged: (LoginLocation value) {
+                  onChanged: (Location value) {
                     setState(() => _location = value);
                   },
                   hint: Text('Location'),

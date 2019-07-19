@@ -7,6 +7,7 @@ import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
+import 'package:hikma_health/widgets/locations/locations.dart';
 import 'package:hikma_health/widgets/login/login.dart';
 import 'package:hikma_health/widgets/new_patient/new_patient.dart';
 import 'package:hikma_health/widgets/patient_details/patient_details.dart';
@@ -78,8 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     LoginPage(userRepository: _userRepository)
             ),
           );
-        }
-        else if (state is HomeInitial) {
+        } else if (state is HomeInitial) {
           _searchController.text = state.query;
           _fieldEmpty = _searchController.text.isEmpty;
         }
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Scaffold(
             appBar: AppBar(
               title: Text("Hikma Home"),
-              centerTitle: true,
+              centerTitle: false,
               leading: Padding(
                   padding: EdgeInsets.all(12),
                   child: ImageIcon(AssetImage('assets/logo.png'))
@@ -126,6 +126,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                     });
+                  },
+                )
+                    : Container(width: 0, height: 0),
+                _online
+                    ? IconButton(
+                  icon: Icon(Icons.location_on),
+                  tooltip: 'Change location',
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return LocationsView(userRepository: _userRepository);
+                      }
+                    );
                   },
                 )
                     : Container(width: 0, height: 0),
