@@ -25,7 +25,6 @@ class UserRepository {
         username: username,
         password: password,
         apiBase: await readInstance());
-    print(basicAuth);
     return basicAuth;
   }
 
