@@ -28,7 +28,6 @@ class PatientDetailsScreen extends StatefulWidget {
 }
 
 class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
-//  String _basicAuth;
   PatientDetailsBloc _patientBloc;
 
   int get _localId => widget.localId;
@@ -39,7 +38,6 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   void initState() {
     super.initState();
     _patientBloc = PatientDetailsBloc(userRepository: _userRepository);
-//    _userRepository.readAuth().then((auth) => _basicAuth = auth);
   }
 
   @override
@@ -89,15 +87,6 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-//                      CircleAvatar(
-//                        radius: 64.0,
-//                        backgroundImage: NetworkImage(
-//                          '$API_BASE/patientImage?patientUuid=${widget.uuid}',
-//                          headers: {'authorization': _basicAuth},
-//                        ),
-//                        backgroundColor: Colors.transparent,
-//                      ),
-//                      Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                       Text(
                         '${state.patientData.firstName} '
                             '${state.patientData.lastName}',

@@ -27,7 +27,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _fieldEmpty = true, _online = true;
-//  String _basicAuth;
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
@@ -39,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-//    _userRepository.readAuth().then((auth) => _basicAuth = auth);
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _homeBloc = HomeBloc(
         userRepository: _userRepository,
@@ -219,14 +217,6 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: patientsList?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
-//            leading: CircleAvatar(
-//                radius: 16,
-//                backgroundImage: NetworkImage(
-//                    '$API_BASE/patientImage?patientUuid=${patientsList[index].uuid}',
-//                    headers: {'authorization': _basicAuth}
-//                ),
-//                backgroundColor: Colors.transparent
-//            ),
             title: Text(patientsList[index].name),
             subtitle: Text(patientsList[index].id),
             onTap: () async {

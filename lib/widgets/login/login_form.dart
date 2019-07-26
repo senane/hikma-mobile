@@ -147,12 +147,6 @@ class _LoginFormState extends State<LoginForm> {
                       _loginBloc.dispatch(LoginStarted());
                     },
                   ),
-//                    FlatButton(
-//                      child: Text('CANCEL'),
-//                      onPressed: () {
-//                        _loginBloc.dispatch(LoginCancelled());
-//                      },
-//                    )
                 ],
               ),
             ],
