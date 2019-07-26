@@ -29,6 +29,8 @@ class _LoginFormState extends State<LoginForm> {
   final _usernameNode = FocusNode();
   final _passwordNode = FocusNode();
 
+  bool _errorAlreadyDisplayed = false;
+
   LoginBloc get _loginBloc => widget.loginBloc;
 
   List<LoginLocation> _locations;
@@ -46,7 +48,7 @@ class _LoginFormState extends State<LoginForm> {
               padding: EdgeInsets.only(top: 128),
               child: Center(child: CircularProgressIndicator())
           );
-        } else if (state is LoginFailure) {
+        } else if (state is LoginFailure && !_errorAlreadyDisplayed) {
           _onWidgetDidBuild(() {
             Scaffold.of(context).showSnackBar(
               SnackBar(
@@ -55,8 +57,10 @@ class _LoginFormState extends State<LoginForm> {
               ),
             );
           });
+          _errorAlreadyDisplayed = true;
         } else if (state is LoginChooseInstance
-            || state is LoginInstanceLoading) {
+            || state is LoginInstanceLoading
+            || state is LoginInstanceFailure) {
           return LoginInstanceForm(loginBloc: _loginBloc,);
         } else if (state is LoginCredentials) {
           _locations = state.locations;
@@ -137,6 +141,7 @@ class _LoginFormState extends State<LoginForm> {
                     textColor: Colors.white,
                     onPressed: () {
                       if (state is! LoginLoading) {
+                        _errorAlreadyDisplayed = false;
                         _onLoginButtonPressed();
                       }
                     },

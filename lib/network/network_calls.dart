@@ -6,9 +6,6 @@ import 'package:hikma_health/model/session.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-//const String API_BASE =
-//    'https://demo.hikmahealth.org/openmrs/ws/rest/v1';
-
 Future<String> auth(
     {@required username, @required password, @required String apiBase}) async {
   String basicAuth = createBasicAuth(username, password);

@@ -23,11 +23,24 @@ class _LoginInstanceFormState extends State<LoginInstanceForm> {
 
   LoginBloc get _loginBloc => widget.loginBloc;
 
+  bool _errorAlreadyDisplayed = false;
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LoginEvent, LoginState>(
       bloc: _loginBloc,
       builder: (context, state) {
+        if (state is LoginInstanceFailure && !_errorAlreadyDisplayed) {
+          _onWidgetDidBuild(() {
+            Scaffold.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${state.error}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          });
+          _errorAlreadyDisplayed = true;
+        }
         return Form(
           key: _formKey,
           child: Column(
@@ -78,6 +91,7 @@ class _LoginInstanceFormState extends State<LoginInstanceForm> {
                     textColor: Colors.white,
                     onPressed: () {
                       if (state is! LoginInstanceLoading) {
+                        _errorAlreadyDisplayed = false;
                         _onChooseInstancePressed();
                       }
                     },
@@ -98,6 +112,12 @@ class _LoginInstanceFormState extends State<LoginInstanceForm> {
         );
       },
     );
+  }
+
+  _onWidgetDidBuild(Function callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      callback();
+    });
   }
 
   _onChooseInstancePressed() {
