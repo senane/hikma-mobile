@@ -16,7 +16,7 @@ main() {
     List<LoginLocation> locationList = await getLocations(
         'https://demo.hikmahealth.org/openmrs/ws/rest/v1');
     print('${locationList.length} locations found.');
-    for (LoginLocation location in locationList) {
+    for (Location location in locationList) {
       print('Location Name: ${location.name}.');
       print('Location ID: ${location.uuid}.');
     }

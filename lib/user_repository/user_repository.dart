@@ -56,7 +56,7 @@ class UserRepository {
     return await readAuth() != null;
   }
 
-  Future<void> persistLocation(LoginLocation location) async {
+  Future<void> persistLocation(Location location) async {
     /// write to keystore/keychain`
     await _secureStorage.write(key: 'location_name', value: location.name);
     await _secureStorage.write(key: 'location_uuid', value: location.uuid);

@@ -13,7 +13,7 @@ class AppStarted extends AuthenticationEvent {
 
 class LoggedIn extends AuthenticationEvent {
   final String auth;
-  final LoginLocation location;
+  final Location location;
 
   LoggedIn({@required this.auth, @required this.location})
       : super([auth, location]);

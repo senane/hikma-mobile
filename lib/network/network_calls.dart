@@ -46,7 +46,7 @@ Future<List<LoginLocation>> getLocations(String apiBase) async {
         'Make sure your credentials are correct');
   }
   final responseJson = json.decode(response.body);
-  return LoginLocationList.fromJson(responseJson).locationSearchList;
+  return LocationList.fromJson(responseJson).locationList;
 }
 
 Future<List<PatientSearchResult>> queryPatient({
