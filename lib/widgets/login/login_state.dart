@@ -18,7 +18,7 @@ class LoginChooseInstance extends LoginState {
 
 class LoginCredentials extends LoginState {
 
-  final List<LoginLocation> locations;
+  final List<Location> locations;
   final String instance;
 
   LoginCredentials({@required this.instance, @required this.locations})

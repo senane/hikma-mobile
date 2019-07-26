@@ -33,8 +33,8 @@ class _LoginFormState extends State<LoginForm> {
 
   LoginBloc get _loginBloc => widget.loginBloc;
 
-  List<LoginLocation> _locations;
-  LoginLocation _location;
+  List<Location> _locations;
+  Location _location;
   String _instance;
 
   @override

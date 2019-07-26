@@ -31,7 +31,7 @@ Future<String> baseAuth({@required auth, @required String apiBase}) async {
   return session.authenticated ? auth : null;
 }
 
-Future<List<LoginLocation>> getLocations(String apiBase) async {
+Future<List<Location>> getLocations(String apiBase) async {
   var response = await http
       .get('$apiBase/location?tag=Login Location')
       .timeout(Duration(seconds: 30));

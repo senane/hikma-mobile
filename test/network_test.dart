@@ -13,7 +13,7 @@ main() {
   });
 
   test("Login Locations", () async {
-    List<LoginLocation> locationList = await getLocations(
+    List<Location> locationList = await getLocations(
         'https://demo.hikmahealth.org/openmrs/ws/rest/v1');
     print('${locationList.length} locations found.');
     for (Location location in locationList) {
