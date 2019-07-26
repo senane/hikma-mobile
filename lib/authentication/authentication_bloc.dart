@@ -40,6 +40,7 @@ class AuthenticationBloc
       yield AuthenticationAuthenticated(auto: false);
     } else if (event is LoggedOut) {
       yield AuthenticationLoading();
+      await userRepository.deleteInstance();
       await userRepository.deleteAuth();
       await userRepository.deleteLocation();
       await userRepository.deleteDatabase();

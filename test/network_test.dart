@@ -6,14 +6,15 @@ import 'package:test_api/test_api.dart';
 main() {
   String authentication;
   test("Login", () async {
-    authentication = await auth(username: 'superman', password: 'Admin123');
+    authentication = await auth(username: 'superman', password: 'Admin123', apiBase: 'https://demo.hikmahealth.org/openmrs/ws/rest/v1');
     print(authentication == null
         ? 'Not authenticated.'
         : 'Authenticated: $authentication\n\n');
   });
 
   test("Login Locations", () async {
-    List<LoginLocation> locationList = await getLocations();
+    List<LoginLocation> locationList = await getLocations(
+        'https://demo.hikmahealth.org/openmrs/ws/rest/v1');
     print('${locationList.length} locations found.');
     for (LoginLocation location in locationList) {
       print('Location Name: ${location.name}.');
@@ -26,7 +27,8 @@ main() {
     List<PatientSearchResult> patients = await queryPatient(
         auth: authentication,
         locationUuid: 'bb0e512e-d225-11e4-9c67-080027b662ec',
-        query: 'test'
+        query: 'test',
+        apiBase: 'https://demo.hikmahealth.org/openmrs/ws/rest/v1'
     );
     for (PatientSearchResult patient in patients) {
       print(patient.name);
@@ -36,7 +38,8 @@ main() {
   test("Get Patient Data", () async {
     PatientPersonalInfo patient = await getPatient(
         auth: authentication,
-        uuid: 'c81a13bd-a669-40ca-ae29-e8d46ece1f16'
+        uuid: 'c81a13bd-a669-40ca-ae29-e8d46ece1f16',
+        apiBase: 'https://demo.hikmahealth.org/openmrs/ws/rest/v1',
     );
     print('${patient.firstNameLocal} ${patient.lastNameLocal}');
   });

@@ -21,13 +21,19 @@ class UserRepository {
     @required String username,
     @required String password,
   }) async {
-    String basicAuth = await auth(username: username, password: password);
+    String basicAuth = await auth(
+        username: username,
+        password: password,
+        apiBase: await readInstance());
+    print(basicAuth);
     return basicAuth;
   }
 
   Future<String> authenticateBasic() async {
     String auth = await _secureStorage.read(key: 'auth');
-    String basicAuth = await baseAuth(auth: auth);
+    String basicAuth = await baseAuth(
+        auth: auth,
+        apiBase: await readInstance());
     return basicAuth;
   }
 
@@ -78,6 +84,22 @@ class UserRepository {
     return await readLocationUuid() != null && await readLocationName() != null;
   }
 
+  Future<void> persistInstance(String url) async {
+    await _secureStorage.write(key: 'instance', value: url);
+  }
+
+  Future<void> deleteInstance() async {
+    await _secureStorage.delete(key: 'instance');
+  }
+
+  Future<String> readInstance() async {
+    return _secureStorage.read(key: 'instance');
+  }
+
+  Future<bool> hasInstance() async {
+    return await readInstance() != null;
+  }
+
   Future<SQLiteDatabase> initDatabase() async {
     return _dbHelper.database;
   }
@@ -92,20 +114,31 @@ class UserRepository {
     if (connectivityResult != ConnectivityResult.none) {
       SQLiteCursor jobs = await _dbHelper.queryJobs();
       String auth = await readAuth();
+      String apiBase = await readInstance();
       for (var job in jobs) {
         if (job[columnJobId] == JOB_CREATE_PATIENT) {
           Map dataMap = json.decode(job[columnData]);
-          PatientIds patientIds = await createPatient(auth: auth, body: dataMap);
+          PatientIds patientIds = await createPatient(
+              auth: auth,
+              body: dataMap,
+              apiBase: apiBase);
           if (patientIds != null) {
-            await _dbHelper.updateLocalPatientIds(job[columnLocalId], patientIds);
+            await _dbHelper.updateLocalPatientIds(
+                job[columnLocalId],
+                patientIds);
             await _dbHelper.removeFromJobQueue(job[columnId]);
           }
         } else if (job[columnJobId] == JOB_UPDATE_PATIENT) {
           int localId = job[columnLocalId];
-          Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(localId);
+          Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(
+              localId);
           String uuid = row[columnUuid];
           Map dataMap = json.decode(job[columnData]);
-          await updatePatient(auth: auth, body: dataMap, uuid: uuid);
+          await updatePatient(
+              auth: auth,
+              body: dataMap,
+              uuid: uuid,
+              apiBase: apiBase);
           await _dbHelper.removeFromJobQueue(job[columnId]);
         }
       }
@@ -123,7 +156,8 @@ class UserRepository {
     await executeJobs();
     PatientPersonalInfo info = await getPatient(
         auth: await readAuth(),
-        uuid: uuid);
+        uuid: uuid,
+        apiBase: await readInstance());
     return await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
   }
 
@@ -158,7 +192,8 @@ class UserRepository {
       return await queryPatient(
           auth: auth,
           locationUuid: locationUuid,
-          query: query);
+          query: query,
+          apiBase: await readInstance());
     }
     SQLiteCursor cursor = await _dbHelper.searchPatients(query);
     return PatientSearchList.fromCursor(cursor).patientSearchList;

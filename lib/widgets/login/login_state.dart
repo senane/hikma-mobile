@@ -11,19 +11,31 @@ class LoginStarting extends LoginState {
   String toString() => 'LoginStarting';
 }
 
-class LoginInitial extends LoginState {
+class LoginChooseInstance extends LoginState {
+  @override
+  String toString() => 'LoginStarting';
+}
+
+class LoginCredentials extends LoginState {
 
   final List<LoginLocation> locations;
+  final String instance;
 
-  LoginInitial({@required this.locations}) : super([locations]);
+  LoginCredentials({@required this.instance, @required this.locations})
+      : super([instance, locations]);
 
   @override
-  String toString() => 'LoginInitial';
+  String toString() => 'LoginCreditials';
 }
 
 class LoginLoading extends LoginState {
   @override
   String toString() => 'LoginLoading';
+}
+
+class LoginInstanceLoading extends LoginState {
+  @override
+  String toString() => 'LoginInstanceLoading';
 }
 
 class LoginFailure extends LoginState {

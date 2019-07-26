@@ -6,6 +6,7 @@ import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/model/location.dart';
 
 import 'login.dart';
+import 'login_instance_form.dart';
 
 class LoginForm extends StatefulWidget {
   final LoginBloc loginBloc;
@@ -32,6 +33,7 @@ class _LoginFormState extends State<LoginForm> {
 
   List<LoginLocation> _locations;
   LoginLocation _location;
+  String _instance;
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +55,21 @@ class _LoginFormState extends State<LoginForm> {
               ),
             );
           });
-        } else if (state is LoginInitial) {
+        } else if (state is LoginChooseInstance
+            || state is LoginInstanceLoading) {
+          return LoginInstanceForm(loginBloc: _loginBloc,);
+        } else if (state is LoginCredentials) {
           _locations = state.locations;
+          _instance = state.instance;
         }
         return Form(
           key: _formKey,
           child: Column(
             children: [
+              Text('Sign in to $_instance'),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+              ),
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
@@ -132,11 +142,17 @@ class _LoginFormState extends State<LoginForm> {
                     },
                   ),
                   FlatButton(
-                    child: Text('CANCEL'),
+                    child: Text('CHANGE INSTANCE'),
                     onPressed: () {
-                      _loginBloc.dispatch(LoginCancelled());
+                      _loginBloc.dispatch(LoginStarted());
                     },
-                  )
+                  ),
+//                    FlatButton(
+//                      child: Text('CANCEL'),
+//                      onPressed: () {
+//                        _loginBloc.dispatch(LoginCancelled());
+//                      },
+//                    )
                 ],
               ),
             ],

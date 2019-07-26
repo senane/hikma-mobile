@@ -11,6 +11,13 @@ class LoginStarted extends LoginEvent {
   String toString() => 'LoginStarted';
 }
 
+class LoginInstanceChosen extends LoginEvent {
+  final String apiBase;
+
+  LoginInstanceChosen({
+    @required this.apiBase,
+  }) : super([apiBase]);
+}
 
 class LoginButtonPressed extends LoginEvent {
   final String username;
