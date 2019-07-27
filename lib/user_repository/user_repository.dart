@@ -95,18 +95,24 @@ class UserRepository {
       for (var job in jobs) {
         if (job[columnJobId] == JOB_CREATE_PATIENT) {
           Map dataMap = json.decode(job[columnData]);
-          PatientIds patientIds = await createPatient(auth: auth, body: dataMap);
+          PatientIds patientIds = await createPatient(
+              auth: auth, body: dataMap);
           if (patientIds != null) {
-            await _dbHelper.updateLocalPatientIds(job[columnLocalId], patientIds);
+            await _dbHelper.updateLocalPatientIds(
+                job[columnLocalId], patientIds);
             await _dbHelper.removeFromJobQueue(job[columnId]);
           }
         } else if (job[columnJobId] == JOB_UPDATE_PATIENT) {
           int localId = job[columnLocalId];
-          Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(localId);
+          Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(
+              localId);
           String uuid = row[columnUuid];
           Map dataMap = json.decode(job[columnData]);
-          await updatePatient(auth: auth, body: dataMap, uuid: uuid);
-          await _dbHelper.removeFromJobQueue(job[columnId]);
+          var response = await updatePatient(
+              auth: auth, body: dataMap, uuid: uuid);
+          if (response != null) {
+            await _dbHelper.removeFromJobQueue(job[columnId]);
+          }
         }
       }
     }
