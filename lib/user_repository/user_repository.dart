@@ -110,6 +110,7 @@ class UserRepository {
           Map dataMap = json.decode(job[columnData]);
           var response = await updatePatient(
               auth: auth, body: dataMap, uuid: uuid);
+          // Check that update was successful before removing from queue.
           if (response != null) {
             await _dbHelper.removeFromJobQueue(job[columnId]);
           }
