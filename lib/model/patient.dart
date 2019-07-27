@@ -8,12 +8,14 @@ class PatientSearchResult {
   final String name;
   final int localId;
 
+  /// Used when results are generated from online results
   PatientSearchResult.fromJson(Map jsonMap)
       : id = jsonMap['identifier'],
         uuid = jsonMap['uuid'],
         name = '${jsonMap['givenName']} ${jsonMap['familyName']}',
         localId = null;
 
+  /// Used when results are generated from local database
   PatientSearchResult.fromRow(row)
       : id = row[columnPID],
         uuid = row[columnUuid],
@@ -129,6 +131,9 @@ class PatientPersonalInfo {
     );
   }
 }
+
+/// The following classes are formatted as specified by the API and are used
+/// in network calls.
 
 class PatientPostData {
   final Map patient;

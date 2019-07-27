@@ -107,8 +107,8 @@ class UserRepository {
     return _dbHelper.deleteDatabase();
   }
 
-  // Executes the job queue
   executeJobs() async {
+    // Make sure device is online.
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       SQLiteCursor jobs = await _dbHelper.queryJobs();
@@ -121,6 +121,7 @@ class UserRepository {
               auth: auth,
               body: dataMap,
               apiBase: apiBase);
+          // If patient was created online, update its IDs and remove the job.
           if (patientIds != null) {
             await _dbHelper.updateLocalPatientIds(
                 job[columnLocalId],
