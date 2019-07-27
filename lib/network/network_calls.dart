@@ -110,7 +110,7 @@ Future<PatientIds> createPatient(
   return PatientIds.fromJson(responseJson);
 }
 
-void updatePatient({
+updatePatient({
   @required auth,
   @required Map body,
   @required String uuid,
