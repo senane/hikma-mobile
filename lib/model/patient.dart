@@ -11,6 +11,7 @@ class PatientSearchResult {
   final int localId;
   final NetworkImage avatar;
 
+  /// Used when results are generated from online results
   PatientSearchResult.fromJson(Map jsonMap, NetworkImage avatar)
   /// Used when results are generated from online results
       : id = jsonMap['identifier'],
@@ -21,6 +22,7 @@ class PatientSearchResult {
 
   /// Used when results are generated from local database
   PatientSearchResult.fromRow(Map<String, dynamic> row, NetworkImage avatar)
+  /// Used when results are generated from local database
       : id = row[columnPID],
         uuid = row[columnUuid],
         name = (row[columnGivenName] + ' ' + row[columnFamilyName]),
