@@ -1,20 +1,20 @@
 
-class LocationSearchList {
-  final List<LocationSearchResult> locationSearchList;
+class LocationList {
+  final List<Location> locationList;
 
-  LocationSearchList.fromJson(Map jsonMap)
-      : locationSearchList = List<LocationSearchResult>() {
+  LocationList.fromJson(Map jsonMap)
+      : locationList = List<Location>() {
     for (var jsonLocation in jsonMap['results']) {
-      locationSearchList.add(LocationSearchResult.fromJson(jsonLocation));
+      locationList.add(Location.fromJson(jsonLocation));
     }
   }
 }
 
-class LocationSearchResult {
+class Location {
   final String uuid;
   final String name;
 
-  LocationSearchResult.fromJson(Map jsonMap)
+  Location.fromJson(Map jsonMap)
       : uuid = jsonMap['uuid'],
         name = jsonMap['display'];
 }

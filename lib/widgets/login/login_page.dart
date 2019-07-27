@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                   )
                 ],
               ),
-              SizedBox(height: 96),
+              SizedBox(height: 64),
               LoginForm(
                 authenticationBloc: _authenticationBloc,
                 loginBloc: _loginBloc,

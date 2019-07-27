@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/colors.dart';
+import 'package:hikma_health/model/location.dart';
 
 import 'login.dart';
 
@@ -22,6 +22,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
+  final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameNode = FocusNode();
@@ -29,12 +30,21 @@ class _LoginFormState extends State<LoginForm> {
 
   LoginBloc get _loginBloc => widget.loginBloc;
 
+  List<Location> _locations;
+  Location _location;
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LoginEvent, LoginState>(
       bloc: _loginBloc,
       builder: (context, state) {
-        if (state is LoginFailure) {
+        if (state is LoginStarting) {
+          _loginBloc.dispatch(LoginStarted());
+          return Padding(
+              padding: EdgeInsets.only(top: 128),
+              child: Center(child: CircularProgressIndicator())
+          );
+        } else if (state is LoginFailure) {
           _onWidgetDidBuild(() {
             Scaffold.of(context).showSnackBar(
               SnackBar(
@@ -43,8 +53,11 @@ class _LoginFormState extends State<LoginForm> {
               ),
             );
           });
+        } else if (state is LoginInitial) {
+          _locations = state.locations;
         }
         return Form(
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
@@ -54,6 +67,11 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 focusNode: _usernameNode,
                 textInputAction: TextInputAction.next,
+                validator: (value) {
+                  return value.isEmpty
+                      ? 'This field cannot be empty'
+                      : null;
+                },
                 onFieldSubmitted: (username) {
                   _usernameNode.unfocus();
                   FocusScope.of(context).requestFocus(_passwordNode);
@@ -68,11 +86,30 @@ class _LoginFormState extends State<LoginForm> {
                 obscureText: true,
                 focusNode: _passwordNode,
                 textInputAction: TextInputAction.done,
-                onFieldSubmitted: (password) {
-                  if (state is! LoginLoading) {
-                    _onLoginButtonPressed();
-                  }
+                validator: (value) {
+                  return value.isEmpty
+                      ? 'This field cannot be empty'
+                      : null;
                 },
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField(
+                  value: _location,
+                  items: _locations.map((Location location) {
+                    return new DropdownMenuItem<Location>(
+                      child: new Text(location.name),
+                      value: location,
+                    );
+                  }).toList(),
+                  onChanged: (Location value) {
+                    setState(() => _location = value);
+                  },
+                  hint: Text('Location'),
+                  validator: (value) {
+                    return value == null
+                        ? 'This field cannot be empty'
+                        : null;
+                  }
               ),
               state is LoginLoading
                   ? Padding(
@@ -116,10 +153,13 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   _onLoginButtonPressed() {
-    _passwordNode.unfocus();
-    _loginBloc.dispatch(LoginButtonPressed(
-      username: _usernameController.text,
-      password: _passwordController.text,
-    ));
+    if (_formKey.currentState.validate()) {
+      _passwordNode.unfocus();
+      _loginBloc.dispatch(LoginButtonPressed(
+        username: _usernameController.text,
+        password: _passwordController.text,
+        location: _location,
+      ));
+    }
   }
 }

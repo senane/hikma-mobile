@@ -13,10 +13,9 @@ main() {
   });
 
   test("Login Locations", () async {
-    LocationSearchList locations = await getLocations();
-    List<LocationSearchResult> locationList = locations.locationSearchList;
+    List<Location> locationList = await getLocations();
     print('${locationList.length} locations found.');
-    for (LocationSearchResult location in locationList) {
+    for (Location location in locationList) {
       print('Location Name: ${location.name}.');
       print('Location ID: ${location.uuid}.');
     }
