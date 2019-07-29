@@ -107,8 +107,8 @@ class UserRepository {
     return _dbHelper.deleteDatabase();
   }
 
-  // Executes the job queue
   executeJobs() async {
+    // Make sure device is online.
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       SQLiteCursor jobs = await _dbHelper.queryJobs();
@@ -121,6 +121,7 @@ class UserRepository {
               auth: auth,
               body: dataMap,
               apiBase: apiBase);
+          // If patient was created online, update its IDs and remove the job.
           if (patientIds != null) {
             await _dbHelper.updateLocalPatientIds(
                 job[columnLocalId],
@@ -152,6 +153,7 @@ class UserRepository {
   }
 
   Future<int> insertOrUpdatePatientByUuid(String uuid) async {
+    // Only call this method if online
     await executeJobs();
     PatientPersonalInfo info = await getPatient(
         auth: await readAuth(),
@@ -162,10 +164,12 @@ class UserRepository {
 
   Future<PatientPersonalInfo> getLocalPatientInfo(
       int localId, String uuid) async {
+    // If online, update the patient info first.
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       localId = await insertOrUpdatePatientByUuid(uuid);
     }
+    // Get and return local patient info.
     Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(localId);
     return PatientPersonalInfo.fromRow(row);
   }
@@ -184,7 +188,9 @@ class UserRepository {
     await _dbHelper.insertToJobQueue(localId, JOB_UPDATE_PATIENT, jsonData);
   }
 
-  Future<List<PatientSearchResult>> searchPatients(String query, String locationUuid) async {
+  Future<List<PatientSearchResult>> searchPatients(
+      String query, String locationUuid) async {
+    // If online, search the online instance
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       String auth = await readAuth();
@@ -194,6 +200,7 @@ class UserRepository {
           query: query,
           apiBase: await readInstance());
     }
+    // Otherwise, search locally saved patients
     SQLiteCursor cursor = await _dbHelper.searchPatients(query);
     return PatientSearchList.fromCursor(
         cursor, await readAuth(), await readInstance()).patientSearchList;

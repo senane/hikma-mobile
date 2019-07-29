@@ -18,6 +18,7 @@ class DatabaseHelper {
   }
 
   Future<SQLiteDatabase> _initDatabase() async {
+    /// If there exists a database, open it. Otherwise, create new database.
     var cacheDir = await Context.cacheDir;
     if (!cacheDir.existsSync()) {
       await cacheDir.create(recursive: true);
@@ -33,6 +34,7 @@ class DatabaseHelper {
   }
 
   _onCreate(SQLiteDatabase db) async {
+    /// Initialize database tables
     await db.execSQL("""
       CREATE TABLE $tableJobQueue (
         $columnId INTEGER PRIMARY KEY,
@@ -69,24 +71,26 @@ class DatabaseHelper {
     """);
   }
 
-  /// Helper methods
+  /// # Helper methods
 
-  /// Database Methods
+  /// ## Database Methods
+
   Future<bool> deleteDatabase() async {
     var cacheDir = await Context.cacheDir;
     _database = null;
     return SQLiteDatabase.deleteDatabase('${cacheDir.path}/cache.db');
   }
 
-  /// Job Queue methods
+  /// ## Job Queue methods
+
   Future<int> insertToJobQueue(int localId, int jobId, String data) async {
     return _database.insert(
       table: tableJobQueue,
       values: <String, dynamic>{
         columnId: null,
-        columnLocalId: localId,
-        columnJobId: jobId,
-        columnData: data,
+        columnLocalId: localId, // Links job to a patient in the database
+        columnJobId: jobId, // Type of job (create patient, edit, etc.)
+        columnData: data, // The job itself
       },
     );
   }
@@ -103,8 +107,10 @@ class DatabaseHelper {
     return _database.rawQuery('SELECT * FROM $tableJobQueue');
   }
 
-  /// Patients Methods
+  /// ## Patients Methods
+
   Future<int> insertToPatients(Map data) {
+    /// Creates a patient from the json output of the create patient form.
     return _database.insert(
       table: tablePatients,
       values: <String, dynamic> {
@@ -139,6 +145,7 @@ class DatabaseHelper {
   }
 
   editPatient(Map data, int localId) async {
+    /// Edits a patient from the json output of the edit patient form.
     _database.update(
         table: tablePatients,
         values: <String, dynamic> {
@@ -172,6 +179,7 @@ class DatabaseHelper {
 
   Future<int> insertOrUpdatePatientFromPersonalInfo(
       PatientPersonalInfo info) async {
+    /// If the patient does not exist, create it. Otherwise update patient info.
     bool exists = await patientExists(info.uuid);
     if (!exists) {
       await _database.insert(
@@ -222,6 +230,10 @@ class DatabaseHelper {
   }
 
   updateLocalPatientIds(int localId, PatientIds patientIds) async {
+    /// Initially, locally saved patients are not assigned patient IDs,
+    /// national IDs, or UUIDs. This must be done by the online instance of
+    /// Bahmni. This method is used to update only the IDs after the patient
+    /// has been created online.
     Map ids = patientIds.toMap();
     await _database.update(
       table: tablePatients,

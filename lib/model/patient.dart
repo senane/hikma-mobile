@@ -11,14 +11,18 @@ class PatientSearchResult {
   final int localId;
   final NetworkImage avatar;
 
+  /// Used when results are generated from online results
   PatientSearchResult.fromJson(Map jsonMap, NetworkImage avatar)
+  /// Used when results are generated from online results
       : id = jsonMap['identifier'],
         uuid = jsonMap['uuid'],
         name = '${jsonMap['givenName']} ${jsonMap['familyName']}',
         localId = null,
         avatar = avatar;
 
+  /// Used when results are generated from local database
   PatientSearchResult.fromRow(Map<String, dynamic> row, NetworkImage avatar)
+  /// Used when results are generated from local database
       : id = row[columnPID],
         uuid = row[columnUuid],
         name = (row[columnGivenName] + ' ' + row[columnFamilyName]),
@@ -132,6 +136,9 @@ class PatientPersonalInfo {
     );
   }
 }
+
+/// The following classes are formatted as specified by the API and are used
+/// in network calls.
 
 class PatientPostData {
   final Map patient;
