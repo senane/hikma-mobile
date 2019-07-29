@@ -29,8 +29,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Stream<LoginState> mapEventToState(LoginEvent event) async* {
 
     if (event is LoginStarted) {
-      locations = await getLocations();
-      yield LoginInitial(locations: locations);
+      await userRepository.deleteInstance();
+      yield LoginChooseInstance();
+
+    } else if (event is LoginInstanceChosen) {
+      yield LoginInstanceLoading();
+      await userRepository.persistInstance(event.apiBase);
+      try {
+        locations = await getLocations(event.apiBase);
+        yield LoginCredentials(locations: locations, instance: event.apiBase);
+      } catch (error) {
+        await userRepository.deleteInstance();
+        yield LoginInstanceFailure(error: error.toString());
+      }
+
     } else if (event is LoginButtonPressed) {
       yield LoginLoading();
       try {
@@ -39,9 +51,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           password: event.password,
         );
         if (auth != null) {
-          authenticationBloc.dispatch(LoggedIn(auth: auth, location: event.location));
+          authenticationBloc.dispatch(LoggedIn(
+              auth: auth, location: event.location));
+        } else {
+          yield LoginFailure(
+              error: 'Username/password combination not recogonized');
         }
-        yield LoginInitial(locations: locations);
       } catch (error) {
         yield LoginFailure(error: error.toString());
       }

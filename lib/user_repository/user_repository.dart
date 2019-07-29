@@ -21,13 +21,18 @@ class UserRepository {
     @required String username,
     @required String password,
   }) async {
-    String basicAuth = await auth(username: username, password: password);
+    String basicAuth = await auth(
+        username: username,
+        password: password,
+        apiBase: await readInstance());
     return basicAuth;
   }
 
   Future<String> authenticateBasic() async {
     String auth = await _secureStorage.read(key: 'auth');
-    String basicAuth = await baseAuth(auth: auth);
+    String basicAuth = await baseAuth(
+        auth: auth,
+        apiBase: await readInstance());
     return basicAuth;
   }
 
@@ -78,6 +83,22 @@ class UserRepository {
     return await readLocationUuid() != null && await readLocationName() != null;
   }
 
+  Future<void> persistInstance(String url) async {
+    await _secureStorage.write(key: 'instance', value: url);
+  }
+
+  Future<void> deleteInstance() async {
+    await _secureStorage.delete(key: 'instance');
+  }
+
+  Future<String> readInstance() async {
+    return _secureStorage.read(key: 'instance');
+  }
+
+  Future<bool> hasInstance() async {
+    return await readInstance() != null;
+  }
+
   Future<SQLiteDatabase> initDatabase() async {
     return _dbHelper.database;
   }
@@ -86,20 +107,25 @@ class UserRepository {
     return _dbHelper.deleteDatabase();
   }
 
-  // Executes the job queue
   executeJobs() async {
+    // Make sure device is online.
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       SQLiteCursor jobs = await _dbHelper.queryJobs();
       String auth = await readAuth();
+      String apiBase = await readInstance();
       for (var job in jobs) {
         if (job[columnJobId] == JOB_CREATE_PATIENT) {
           Map dataMap = json.decode(job[columnData]);
           PatientIds patientIds = await createPatient(
-              auth: auth, body: dataMap);
+              auth: auth,
+              body: dataMap,
+              apiBase: apiBase);
+          // If patient was created online, update its IDs and remove the job.
           if (patientIds != null) {
             await _dbHelper.updateLocalPatientIds(
-                job[columnLocalId], patientIds);
+                job[columnLocalId],
+                patientIds);
             await _dbHelper.removeFromJobQueue(job[columnId]);
           }
         } else if (job[columnJobId] == JOB_UPDATE_PATIENT) {
@@ -108,12 +134,12 @@ class UserRepository {
               localId);
           String uuid = row[columnUuid];
           Map dataMap = json.decode(job[columnData]);
-          var response = await updatePatient(
-              auth: auth, body: dataMap, uuid: uuid);
-          // Check that update was successful before removing from queue.
-          if (response != null) {
-            await _dbHelper.removeFromJobQueue(job[columnId]);
-          }
+          await updatePatient(
+              auth: auth,
+              body: dataMap,
+              uuid: uuid,
+              apiBase: apiBase);
+          await _dbHelper.removeFromJobQueue(job[columnId]);
         }
       }
     }
@@ -127,19 +153,23 @@ class UserRepository {
   }
 
   Future<int> insertOrUpdatePatientByUuid(String uuid) async {
+    // Only call this method if online
     await executeJobs();
     PatientPersonalInfo info = await getPatient(
         auth: await readAuth(),
-        uuid: uuid);
+        uuid: uuid,
+        apiBase: await readInstance());
     return await _dbHelper.insertOrUpdatePatientFromPersonalInfo(info);
   }
 
   Future<PatientPersonalInfo> getLocalPatientInfo(
       int localId, String uuid) async {
+    // If online, update the patient info first.
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       localId = await insertOrUpdatePatientByUuid(uuid);
     }
+    // Get and return local patient info.
     Map<String, dynamic> row = await _dbHelper.getPatientByLocalId(localId);
     return PatientPersonalInfo.fromRow(row);
   }
@@ -158,16 +188,21 @@ class UserRepository {
     await _dbHelper.insertToJobQueue(localId, JOB_UPDATE_PATIENT, jsonData);
   }
 
-  Future<List<PatientSearchResult>> searchPatients(String query, String locationUuid) async {
+  Future<List<PatientSearchResult>> searchPatients(
+      String query, String locationUuid) async {
+    // If online, search the online instance
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult != ConnectivityResult.none) {
       String auth = await readAuth();
       return await queryPatient(
           auth: auth,
           locationUuid: locationUuid,
-          query: query);
+          query: query,
+          apiBase: await readInstance());
     }
+    // Otherwise, search locally saved patients
     SQLiteCursor cursor = await _dbHelper.searchPatients(query);
-    return PatientSearchList.fromCursor(cursor).patientSearchList;
+    return PatientSearchList.fromCursor(
+        cursor, await readAuth(), await readInstance()).patientSearchList;
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
-import 'package:hikma_health/widgets/charts/simple_line.dart';
 import 'package:hikma_health/widgets/edit_patient/edit_patient_page.dart';
 
 import 'patient_details.dart';
@@ -30,6 +29,7 @@ class PatientDetailsScreen extends StatefulWidget {
 
 class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   String _basicAuth;
+  String _apiBase;
   PatientDetailsBloc _patientBloc;
 
   int get _localId => widget.localId;
@@ -41,6 +41,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     super.initState();
     _patientBloc = PatientDetailsBloc(userRepository: _userRepository);
     _userRepository.readAuth().then((auth) => _basicAuth = auth);
+    _userRepository.readInstance().then((instance) => _apiBase = instance);
   }
 
   @override
@@ -90,15 +91,17 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
+
                       CircleAvatar(
                         radius: 64.0,
-                        backgroundImage: NetworkImage(
-                          '$API_BASE/patientImage?patientUuid=${widget.uuid}',
-                          headers: {'authorization': _basicAuth},
-                        ),
+                        backgroundImage: getPatientPhoto(
+                            auth: _basicAuth,
+                            uuid: state.patientData.uuid,
+                            apiBase: _apiBase),
                         backgroundColor: Colors.transparent,
                       ),
                       Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+
                       Text(
                         '${state.patientData.firstName} '
                             '${state.patientData.lastName}',
@@ -132,11 +135,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                   _buildDataBit('State', state.patientData.state),
                   Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                   _buildDataBit('District', state.patientData.district),
-                  Padding(padding: EdgeInsets.symmetric(vertical: 8)),
-                  Container(
-                    height: 300,
-                    child: SimpleLineChart.withDummyData(),
-                  ),
+//                  Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+//                  Container(
+//                    height: 300,
+//                    child: SimpleLineChart.withDummyData(),
+//                  ),
                 ],
               ),
             );

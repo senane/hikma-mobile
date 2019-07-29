@@ -25,7 +25,8 @@ class LocationsViewBloc extends Bloc<LocationListEvent, LocationListState> {
       }
       try {
         String currentLocationUuid = await userRepository.readLocationUuid();
-        List<Location> locations = await getLocations();
+        List<Location> locations = await getLocations(
+            await userRepository.readInstance());
         yield LocationListSuccess(
             currentLocationUuid: currentLocationUuid,
             locations: locations

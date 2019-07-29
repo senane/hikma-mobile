@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_sqlcipher/sqlite.dart';
 import 'package:hikma_health/constants.dart';
+import 'package:hikma_health/network/network_calls.dart';
 import 'package:meta/meta.dart';
 
 class PatientSearchResult {
@@ -7,34 +9,39 @@ class PatientSearchResult {
   final String uuid;
   final String name;
   final int localId;
+  final NetworkImage avatar;
 
-  PatientSearchResult.fromJson(Map jsonMap)
+  /// Used when results are generated from online results
+  PatientSearchResult.fromJson(Map jsonMap, NetworkImage avatar)
+  /// Used when results are generated from online results
       : id = jsonMap['identifier'],
         uuid = jsonMap['uuid'],
         name = '${jsonMap['givenName']} ${jsonMap['familyName']}',
-        localId = null;
+        localId = null,
+        avatar = avatar;
 
-  PatientSearchResult.fromRow(row)
+  /// Used when results are generated from local database
+  PatientSearchResult.fromRow(Map<String, dynamic> row, NetworkImage avatar)
+  /// Used when results are generated from local database
       : id = row[columnPID],
         uuid = row[columnUuid],
         name = (row[columnGivenName] + ' ' + row[columnFamilyName]),
-        localId = row[columnId];
+        localId = row[columnId],
+        avatar = avatar;
 }
 
 class PatientSearchList {
   final List<PatientSearchResult> patientSearchList;
 
-  PatientSearchList.fromJson(Map jsonMap)
-      : patientSearchList = List<PatientSearchResult>() {
-    for (var jsonPatient in jsonMap['pageOfResults']) {
-      patientSearchList.add(PatientSearchResult.fromJson(jsonPatient));
-    }
-  }
+  PatientSearchList.fromResultList(List<PatientSearchResult> list)
+      : patientSearchList = list;
 
-  PatientSearchList.fromCursor(SQLiteCursor rows)
+  PatientSearchList.fromCursor(SQLiteCursor rows, auth, apiBase)
       : patientSearchList = List<PatientSearchResult> () {
     for (var row in rows) {
-      patientSearchList.add(PatientSearchResult.fromRow(row));
+      NetworkImage avatar = getPatientPhoto(
+          auth: auth, uuid: row[columnUuid], apiBase: apiBase);
+      patientSearchList.add(PatientSearchResult.fromRow(row, avatar));
     }
   }
 }
@@ -129,6 +136,9 @@ class PatientPersonalInfo {
     );
   }
 }
+
+/// The following classes are formatted as specified by the API and are used
+/// in network calls.
 
 class PatientPostData {
   final Map patient;

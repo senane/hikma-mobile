@@ -6,6 +6,7 @@ import 'package:hikma_health/colors.dart';
 import 'package:hikma_health/model/location.dart';
 
 import 'login.dart';
+import 'login_instance_form.dart';
 
 class LoginForm extends StatefulWidget {
   final LoginBloc loginBloc;
@@ -28,10 +29,13 @@ class _LoginFormState extends State<LoginForm> {
   final _usernameNode = FocusNode();
   final _passwordNode = FocusNode();
 
+  bool _errorAlreadyDisplayed = false;
+
   LoginBloc get _loginBloc => widget.loginBloc;
 
   List<Location> _locations;
   Location _location;
+  String _instance;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +48,7 @@ class _LoginFormState extends State<LoginForm> {
               padding: EdgeInsets.only(top: 128),
               child: Center(child: CircularProgressIndicator())
           );
-        } else if (state is LoginFailure) {
+        } else if (state is LoginFailure && !_errorAlreadyDisplayed) {
           _onWidgetDidBuild(() {
             Scaffold.of(context).showSnackBar(
               SnackBar(
@@ -53,13 +57,23 @@ class _LoginFormState extends State<LoginForm> {
               ),
             );
           });
-        } else if (state is LoginInitial) {
+          _errorAlreadyDisplayed = true;
+        } else if (state is LoginChooseInstance
+            || state is LoginInstanceLoading
+            || state is LoginInstanceFailure) {
+          return LoginInstanceForm(loginBloc: _loginBloc,);
+        } else if (state is LoginCredentials) {
           _locations = state.locations;
+          _instance = state.instance;
         }
         return Form(
           key: _formKey,
           child: Column(
             children: [
+              Text('Sign in to $_instance'),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+              ),
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
@@ -127,16 +141,17 @@ class _LoginFormState extends State<LoginForm> {
                     textColor: Colors.white,
                     onPressed: () {
                       if (state is! LoginLoading) {
+                        _errorAlreadyDisplayed = false;
                         _onLoginButtonPressed();
                       }
                     },
                   ),
                   FlatButton(
-                    child: Text('CANCEL'),
+                    child: Text('CHANGE INSTANCE'),
                     onPressed: () {
-                      _loginBloc.dispatch(LoginCancelled());
+                      _loginBloc.dispatch(LoginStarted());
                     },
-                  )
+                  ),
                 ],
               ),
             ],
