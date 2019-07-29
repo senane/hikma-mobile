@@ -202,6 +202,7 @@ class UserRepository {
     }
     // Otherwise, search locally saved patients
     SQLiteCursor cursor = await _dbHelper.searchPatients(query);
-    return PatientSearchList.fromCursor(cursor).patientSearchList;
+    return PatientSearchList.fromCursor(
+        cursor, await readAuth(), await readInstance()).patientSearchList;
   }
 }
