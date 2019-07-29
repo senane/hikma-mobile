@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hikma_health/authentication/authentication.dart';
 import 'package:hikma_health/colors.dart';
-import 'package:hikma_health/network/network_calls.dart';
 import 'package:hikma_health/user_repository/user_repository.dart';
 import 'package:hikma_health/widgets/locations/locations.dart';
 import 'package:hikma_health/widgets/login/login.dart';
@@ -29,7 +28,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _fieldEmpty = true, _online = true;
-  String _basicAuth;
   final _searchController = TextEditingController();
   final _searchNode = FocusNode();
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
@@ -38,11 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   UserRepository get _userRepository => widget.userRepository;
 
-
   @override
   void initState() {
     super.initState();
-    _userRepository.readAuth().then((auth) => _basicAuth = auth);
     _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     _homeBloc = HomeBloc(
         userRepository: _userRepository,
@@ -237,10 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return ListTile(
             leading: CircleAvatar(
                 radius: 16,
-                backgroundImage: NetworkImage(
-                    '$API_BASE/patientImage?patientUuid=${patientsList[index].uuid}',
-                    headers: {'authorization': _basicAuth}
-                ),
+                backgroundImage: patientsList[index].avatar,
                 backgroundColor: Colors.transparent
             ),
             title: Text(patientsList[index].name),

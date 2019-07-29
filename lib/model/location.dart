@@ -1,4 +1,3 @@
-
 class LocationList {
   final List<Location> locationList;
 
