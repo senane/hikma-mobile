@@ -231,6 +231,11 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: patientsList?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
+            leading: CircleAvatar(
+                radius: 16,
+                backgroundImage: patientsList[index].avatar,
+                backgroundColor: Colors.transparent
+            ),
             title: Text(patientsList[index].name),
             subtitle: Text(patientsList[index].id),
             onTap: () async {

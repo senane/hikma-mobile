@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:hikma_health/model/location.dart';
 import 'package:hikma_health/model/patient.dart';
 import 'package:hikma_health/model/session.dart';
@@ -68,7 +69,12 @@ Future<List<PatientSearchResult>> queryPatient({
     return null;
   }
   final responseJson = json.decode(response.body);
-  return PatientSearchList.fromJson(responseJson).patientSearchList;
+  List<PatientSearchResult> patientResultList = [];
+  for (var patient in responseJson['pageOfResults']) {
+    NetworkImage avatar = getPatientPhoto(auth: auth, uuid: patient['uuid'], apiBase: apiBase);
+    patientResultList.add(PatientSearchResult.fromJson(patient, avatar));
+  }
+  return PatientSearchList.fromResultList(patientResultList).patientSearchList;
 }
 
 Future<PatientPersonalInfo> getPatient({
@@ -111,7 +117,7 @@ Future<PatientIds> createPatient(
 }
 
 updatePatient({
-  @required auth,
+  @required String auth,
   @required Map body,
   @required String uuid,
   @required String apiBase}) async {
@@ -133,3 +139,13 @@ updatePatient({
 
 String createBasicAuth(String username, String password) =>
     'Basic ' + base64Encode(utf8.encode('$username:$password'));
+
+NetworkImage getPatientPhoto({
+  @required String auth,
+  @required String uuid,
+  @required String apiBase,}) {
+  return NetworkImage(
+      '$apiBase/patientImage?patientUuid=$uuid',
+      headers: {'authorization': auth},
+  );
+}

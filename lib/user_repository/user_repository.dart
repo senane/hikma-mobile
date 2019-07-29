@@ -195,6 +195,7 @@ class UserRepository {
           apiBase: await readInstance());
     }
     SQLiteCursor cursor = await _dbHelper.searchPatients(query);
-    return PatientSearchList.fromCursor(cursor).patientSearchList;
+    return PatientSearchList.fromCursor(
+        cursor, await readAuth(), await readInstance()).patientSearchList;
   }
 }
