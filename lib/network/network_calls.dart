@@ -116,7 +116,7 @@ Future<PatientIds> createPatient(
   return PatientIds.fromJson(responseJson);
 }
 
-updatePatient({
+Future<http.Response> updatePatient({
   @required String auth,
   @required Map body,
   @required String uuid,
@@ -135,6 +135,7 @@ updatePatient({
   if (response.statusCode == 401) {
     return null;
   }
+  return response;
 }
 
 String createBasicAuth(String username, String password) =>
